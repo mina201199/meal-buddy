@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>今天吃什麼｜JEV 整合版</title>
+<meta name="theme-color" content="#ff6433" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #fff7f1;
+    --surface: #ffffff;
+    --surface-2: #fff0e6;
+    --text: #2a1c15;
+    --muted: #8c776b;
+    --line: #f1e1d6;
+    --accent: #ff6433;
+    --accent-2: #ffa53d;
+    --accent-soft: #ffe8dd;
+    --ok: #1f9d6b;
+    --warn-bg: #fff4d6;
+    --warn-text: #7a5200;
+    --warn-line: #f3dc9c;
+    --shadow: 0 8px 28px rgba(140, 70, 30, .10);
+    --radius: 20px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16110e;
+      --surface: #211a16;
+      --surface-2: #2b221d;
+      --text: #f6ebe4;
+      --muted: #ad998d;
+      --line: #382d27;
+      --accent: #ff7447;
+      --accent-2: #ffb35c;
+      --accent-soft: #3d2519;
+      --ok: #37c28c;
+      --warn-bg: #3a2e12;
+      --warn-text: #f3d38a;
+      --warn-line: #5a4718;
+      --shadow: 0 8px 28px rgba(0, 0, 0, .4);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans TC", system-ui, -apple-system, "Microsoft JhengHei", sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; }
+
+  .app { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  /* ---------- Header ---------- */
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .greet { margin: 0; color: var(--muted); font-size: 14px; font-weight: 500; }
+  h1 { margin: 2px 0 0; font-size: 30px; font-weight: 900; letter-spacing: .5px; line-height: 1.2; }
+  h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .loc-pill {
+    display: inline-flex; align-items: center; gap: 6px; max-width: 52%;
+    margin-top: 4px; padding: 8px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow);
+    font-size: 13px; font-weight: 500; white-space: nowrap;
+  }
+  .loc-pill span { overflow: hidden; text-overflow: ellipsis; }
+  .loc-pill b { color: var(--accent); font-weight: 700; flex: none; }
+
+  .banner {
+    display: flex; gap: 8px; align-items: flex-start;
+    background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-line);
+    padding: 10px 14px; border-radius: 14px; font-size: 13px; margin-bottom: 16px;
+  }
+  .banner p { margin: 0; flex: 1; }
+  .retry {
+    flex: none; align-self: center; border: 1px solid currentColor; background: transparent;
+    color: inherit; border-radius: 999px; padding: 3px 12px; font-size: 12.5px; font-weight: 700;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout { display: flex; flex-direction: column; gap: 16px; }
+  .col { display: contents; }
+  #controls { order: 1; } #result { order: 2; } #mapCard { order: 3; } #listCard { order: 4; } #historyCard { order: 5; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+  }
+  .label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .label small { color: var(--muted); font-weight: 400; font-size: 12px; text-align: right; }
+  .label b { color: var(--accent); }
+  .field + .field { margin-top: 20px; }
+
+  /* segmented control（哪一餐、交通方式、天氣） */
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: var(--surface-2); padding: 5px; border-radius: 14px; }
+  .seg.c3 { grid-template-columns: repeat(3, 1fr); }
+  .seg button {
+    border: 0; background: transparent; padding: 8px 0; border-radius: 10px;
+    font-size: 14px; font-weight: 500; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    transition: background .15s, color .15s;
+  }
+  .seg button .e { font-size: 19px; line-height: 1.2; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+  .range { display: block; width: 100%; margin: 0; accent-color: var(--accent); }
+  .hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+
+  /* chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface);
+    padding: 7px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+
+  /* category tiles：普通 → 想吃 → 不要 */
+  .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .cat {
+    position: relative; border: 1.5px solid var(--line); background: var(--surface);
+    border-radius: 14px; padding: 10px 2px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 12.5px; font-weight: 500;
+    transition: transform .12s, border-color .15s, background .15s;
+  }
+  .cat .e { font-size: 24px; line-height: 1; }
+  .cat .n { position: absolute; top: 3px; right: 6px; font-size: 10px; color: var(--muted); font-weight: 500; }
+  .cat .s { position: absolute; top: 3px; left: 5px; font-size: 10px; line-height: 1; }
+  .cat[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+  .cat[data-v="-1"] { border-style: dashed; color: var(--muted); text-decoration: line-through; }
+  .cat[data-v="-1"] .e { opacity: .45; filter: grayscale(1); }
+  .cat:active { transform: scale(.95); }
+
+  .toggle { display: flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+  .toggle input { accent-color: var(--accent); width: 17px; height: 17px; margin: 0; }
+
+  /* 進階：JEV 設定 */
+  .adv { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .adv summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; font-size: 14px; font-weight: 700; }
+  .adv summary::-webkit-details-marker { display: none; }
+  .adv summary small { flex: 1; min-width: 0; text-align: right; color: var(--muted); font-weight: 400; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .adv summary::after { content: '＋'; color: var(--muted); flex: none; }
+  .adv[open] summary::after { content: '－'; }
+  .adv .field { margin-top: 18px; }
+  .w-row { display: grid; grid-template-columns: 5em minmax(0, 1fr) 1.2em; align-items: center; gap: 10px; font-size: 13.5px; }
+  .w-row + .w-row { margin-top: 8px; }
+  .w-row i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .w-row b { text-align: right; font-variant-numeric: tabular-nums; }
+  .formula { margin-top: 16px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+  .formula b { color: var(--text); }
+
+  .cta {
+    margin-top: 16px; width: 100%; border: 0; border-radius: 16px; padding: 16px;
+    font-size: 19px; font-weight: 900; letter-spacing: 2px; color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 10px 24px rgba(255, 100, 51, .35);
+    transition: transform .1s, box-shadow .1s, opacity .2s;
+  }
+  .cta:hover { box-shadow: 0 12px 28px rgba(255, 100, 51, .45); }
+  .cta:active { transform: translateY(2px) scale(.99); box-shadow: 0 5px 14px rgba(255, 100, 51, .3); }
+  .cta:disabled { opacity: .75; cursor: wait; }
+  .cta .dice { display: inline-block; }
+  .cta.rolling .dice { animation: roll .5s linear infinite; }
+  @keyframes roll { to { transform: rotate(360deg); } }
+  .alt { width: 100%; margin-top: 8px; }
+
+  /* ---------- Result ---------- */
+  .result { padding: 0; overflow: hidden; }
+  .slot {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff; padding: 20px 18px 22px; text-align: center;
+  }
+  .slot-kicker { font-size: 13px; opacity: .92; font-weight: 500; letter-spacing: 1px; }
+  .slot-main { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 4px; min-height: 64px; }
+  .slot-emoji { font-size: 48px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+  .slot-name { font-size: 30px; font-weight: 900; letter-spacing: 1px; }
+  .slot.spinning .slot-main { animation: jitter .12s linear infinite; }
+  .slot.landed .slot-main { animation: pop .5s cubic-bezier(.2, 1.6, .4, 1); }
+  @keyframes jitter { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
+  @keyframes pop { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
+
+  .pick { padding: 16px 18px 2px; }
+  .pick-idle { margin: 4px 0 14px; color: var(--muted); font-size: 14px; text-align: center; }
+  .pick-name { font-size: 20px; font-weight: 700; line-height: 1.35; }
+  .pick-meta { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .tags { margin-top: 4px; }
+  .tag { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); margin: 6px 6px 0 0; }
+  .tag.hit { background: rgba(31, 157, 107, .13); color: var(--ok); font-weight: 700; }
+  .tag.warn { background: var(--warn-bg); color: var(--warn-text); font-weight: 700; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+  .stat { background: var(--surface-2); border-radius: 12px; padding: 8px 6px; text-align: center; }
+  .stat b { display: block; font-size: 19px; font-weight: 900; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  .stat small { font-size: 11.5px; color: var(--muted); }
+  .why-line { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .why-line b { color: var(--text); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 18px 0; }
+  .actions.sub { grid-template-columns: 1fr 1fr 1.25fr; padding-top: 8px; padding-bottom: 18px; }
+  .actions .wide { grid-column: 1 / -1; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid var(--line); background: var(--surface); border-radius: 12px;
+    padding: 11px 10px; font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap;
+    transition: filter .15s, transform .1s;
+  }
+  .btn:hover { filter: brightness(.97); }
+  .btn:active { transform: scale(.98); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .btn.ghost { background: var(--surface-2); border-color: transparent; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ---------- Map ---------- */
+  .map-card { padding: 0; overflow: hidden; }
+  .map-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; }
+  .map-head h2 { flex: 1; min-width: 0; margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tabs { display: flex; gap: 2px; flex: none; padding: 3px; border-radius: 10px; background: var(--surface-2); }
+  .tabs button { border: 0; background: transparent; padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+  .tabs button[aria-selected="true"] { background: var(--surface); color: var(--text); font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .map-wrap { position: relative; height: 280px; background: var(--surface-2); }
+  .map-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .radar { position: absolute; inset: 0; }
+  .radar svg { display: block; width: 100%; height: 100%; }
+  .radar [data-id] { cursor: pointer; }
+  .map-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; }
+  .map-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 16px 12px; font-size: 12px; color: var(--muted); }
+  .map-foot a { flex: none; margin-left: auto; font-size: 12.5px; font-weight: 700; color: var(--accent); text-decoration: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
+
+  /* ---------- List ---------- */
+  .list-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .list-head h2 { font-size: 17px; margin: 0; }
+  .list-head span { font-size: 13px; color: var(--muted); }
+  .ctx { margin: 6px 0 8px; padding: 7px 10px; border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 12.5px; }
+  .ctx b { color: var(--text); }
+  .bar-legend { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-bottom: 4px; font-size: 11.5px; color: var(--muted); }
+  .bar-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 8px; margin: 0 -8px;
+    border-radius: 12px; cursor: pointer; transition: background .12s;
+  }
+  .item + .item { border-top: 1px solid var(--line); }
+  .item:hover { background: var(--surface-2); }
+  .item.active { background: var(--accent-soft); }
+  .item-emoji { width: 42px; height: 42px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; font-size: 22px; flex: none; }
+  .item.active .item-emoji { background: var(--surface); }
+  .item-body { flex: 1; min-width: 0; }
+  .item-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item.out .item-emoji { filter: grayscale(1); opacity: .6; }
+  .item.out .item-name { color: var(--muted); }
+  .bar { display: flex; max-width: 240px; height: 6px; margin-top: 5px; border-radius: 3px; overflow: hidden; background: var(--surface-2); }
+  .item.active .bar, .item:hover .bar { background: var(--surface); }
+  .bar span { display: block; height: 100%; }
+  .item-score { flex: none; min-width: 3em; text-align: right; }
+  .item-score b { display: block; font-size: 18px; font-weight: 900; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .item-score small { display: block; font-size: 11.5px; color: var(--muted); }
+  .item-score.top b { color: var(--accent); }
+  .more { margin-top: 10px; width: 100%; }
+  .empty { padding: 22px 8px; text-align: center; color: var(--muted); font-size: 14px; }
+  .empty a { color: var(--accent); font-weight: 700; }
+  .excluded { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+  .excluded summary { cursor: pointer; padding: 4px 0; font-size: 13px; color: var(--muted); }
+  .sk { display: flex; gap: 12px; align-items: center; padding: 10px 0; }
+  .sk i { display: block; border-radius: 10px; background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* ---------- History ---------- */
+  .hist { list-style: none; margin: 0; padding: 0; }
+  .hist li { display: flex; gap: 10px; align-items: center; padding: 8px 0; font-size: 14px; }
+  .hist li + li { border-top: 1px solid var(--line); }
+  .hist .h-e { font-size: 20px; width: 28px; text-align: center; }
+  .hist small { display: block; color: var(--muted); font-size: 12px; }
+  .link-btn { border: 0; background: none; color: var(--muted); font-size: 12.5px; padding: 0; text-decoration: underline; }
+
+  footer { margin-top: 24px; text-align: center; font-size: 12px; color: var(--muted); }
+  footer a { color: var(--muted); }
+
+  /* ---------- Sheet & toast ---------- */
+  .sheet-backdrop {
+    position: fixed; inset: 0; z-index: 50; background: rgba(20, 10, 5, .45);
+    display: flex; align-items: flex-end; justify-content: center; animation: fade .2s;
+  }
+  .sheet {
+    width: 100%; max-width: 480px; max-height: 85vh; overflow: auto;
+    background: var(--surface); border-radius: 22px 22px 0 0; padding: 10px 18px 22px;
+    animation: up .25s ease-out;
+  }
+  .sheet-grip { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 10px; }
+  .sheet h3 { margin: 4px 0 14px; font-size: 18px; }
+  .sheet form { display: flex; gap: 8px; margin-top: 12px; }
+  .sheet input {
+    flex: 1; min-width: 0; padding: 11px 14px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--surface-2); outline: none;
+  }
+  .sheet input:focus { border-color: var(--accent); }
+  .places { list-style: none; margin: 10px 0 0; padding: 0; }
+  .places button { width: 100%; text-align: left; border: 0; background: none; padding: 10px 6px; border-radius: 10px; }
+  .places button:hover { background: var(--surface-2); }
+  .places b { display: block; font-size: 15px; }
+  .places small { color: var(--muted); font-size: 12px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .w100 { width: 100%; }
+  .mt8 { margin-top: 8px; }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; z-index: 60; max-width: calc(100% - 32px);
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 500; transition: .25s; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+
+  /* ---------- Desktop ---------- */
+  @media (min-width: 600px) {
+    .sheet-backdrop { align-items: center; }
+    .sheet { border-radius: 22px; }
+  }
+  @media (min-width: 980px) {
+    .app { max-width: 1180px; padding: 28px 28px 48px; }
+    .top { margin-bottom: 22px; }
+    h1 { font-size: 34px; }
+    .loc-pill { max-width: 40%; }
+    .layout { display: grid; grid-template-columns: 410px minmax(0, 1fr); gap: 22px; align-items: start; }
+    .col { display: flex; flex-direction: column; gap: 22px; }
+    .map-wrap { height: 340px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <p class="greet" id="greet">你好！</p>
+      <h1>今天<span>吃什麼</span>？</h1>
+    </div>
+    <button class="loc-pill" id="locBtn" type="button" aria-label="更換地點">📍 <span id="locText">定位中…</span> <b>更換</b></button>
+  </header>
+
+  <div class="banner" id="banner" role="status" hidden>
+    <span>💡</span><p id="bannerText"></p>
+    <button class="retry" id="retryBtn" type="button" hidden>重新載入</button>
+  </div>
+
+  <main class="layout">
+    <div class="col col-left">
+      <section class="card" id="controls" aria-label="篩選條件">
+        <div class="field">
+          <div class="label">哪一餐 <small id="evalTime"></small></div>
+          <div class="seg" id="mealSeg"></div>
+        </div>
+        <div class="field">
+          <div class="label">怎麼去 <b id="tV"></b></div>
+          <div class="seg" id="modeSeg"></div>
+          <input type="range" class="range" id="maxT" min="3" max="30" step="1" aria-label="最多願意花幾分鐘到店" style="margin-top:14px" />
+          <p class="hint" id="reachHint"></p>
+        </div>
+        <div class="field">
+          <div class="label">想吃什麼類 <small>點一下想吃、再點不要；右上角是到得了的家數</small></div>
+          <div class="cat-grid" id="catGrid"></div>
+        </div>
+        <div class="field">
+          <div class="label">不能吃 <small>依店名與標籤判斷，僅供參考</small></div>
+          <div class="chips" id="restrictChips"></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="avoidRecent" /> 避開最近兩天吃過的菜色</label>
+
+        <details class="adv" id="adv">
+          <summary><span>⚙️ 進階：JEV 決策設定</span><small id="advSum"></small></summary>
+          <div class="field">
+            <div class="label">每人預算 <b id="bV"></b></div>
+            <input type="range" class="range" id="budget" min="80" max="800" step="10" aria-label="每人預算" />
+            <p class="hint">開放地圖沒有價位資料，均消是依餐廳類型估計的。</p>
+          </div>
+          <div class="field">
+            <div class="label">天氣</div>
+            <div class="seg c3" id="weatherSeg"></div>
+          </div>
+          <div class="field">
+            <div class="label">權重 <small>0 = 不在乎</small></div>
+            <div id="weights"></div>
+            <p class="hint">「菜色」要抽到菜之後才會算分；「新鮮感」看最近吃過的紀錄。</p>
+          </div>
+          <div class="field">
+            <div class="label">冒險度 <b id="tempV"></b></div>
+            <input type="range" class="range" id="temp" min="0" max="100" step="1" aria-label="冒險度" />
+            <p class="hint">0 = 永遠選最高分；越高越可能抽到非第一名，抽籤池也越大（前 10～50 名）。</p>
+          </div>
+          <div class="formula">
+            <b>JEV</b> = P(去得成且開著) × Σ(權重 × 分項分數) ÷ Σ權重<br />
+            抽中機率 ∝ exp(JEV ÷ 溫度)
+          </div>
+        </details>
+
+        <button class="cta" id="spinBtn" type="button"><span class="dice">🎲</span> 幫我決定！</button>
+        <button class="btn ghost alt" id="directBtn" type="button">🎯 不抽菜，直接依 JEV 抽一家</button>
+      </section>
+
+      <section class="card" id="historyCard" aria-label="最近吃過">
+        <div class="list-head">
+          <h2>最近吃過</h2>
+          <button class="link-btn" id="clearHist" type="button">清除</button>
+        </div>
+        <ul class="hist" id="hist"></ul>
+      </section>
+    </div>
+
+    <div class="col col-right">
+      <section class="card result" id="result" aria-live="polite">
+        <div class="slot" id="slot">
+          <div class="slot-kicker" id="slotKicker">午餐吃什麼？</div>
+          <div class="slot-main">
+            <span class="slot-emoji" id="slotEmoji">🍽️</span>
+            <span class="slot-name" id="slotName">交給我決定</span>
+          </div>
+        </div>
+        <div class="pick" id="pick"></div>
+        <div class="actions" id="actMain">
+          <a class="btn primary" id="navBtn" target="_blank" rel="noopener">🧭 導航過去</a>
+          <a class="btn" id="gBtn" target="_blank" rel="noopener">⭐ Google 看評價</a>
+        </div>
+        <div class="actions sub" id="actSub">
+          <button class="btn ghost" id="rerollShop" type="button">🔄 換一家</button>
+          <button class="btn ghost" id="rerollDish" type="button">🎲 換道菜</button>
+          <button class="btn ok" id="eatBtn" type="button">就吃這個 ✓</button>
+        </div>
+      </section>
+
+      <section class="card map-card" id="mapCard" aria-label="地圖">
+        <div class="map-head">
+          <h2 id="mapTitle">地圖</h2>
+          <div class="tabs" id="mapTabs" role="tablist">
+            <button type="button" role="tab" data-view="google" aria-selected="true">Google 地圖</button>
+            <button type="button" role="tab" data-view="radar" aria-selected="false">候選分布</button>
+          </div>
+        </div>
+        <div class="map-wrap">
+          <div class="map-empty" id="mapEmpty">定位中…</div>
+          <iframe id="gmap" title="Google 地圖" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen hidden></iframe>
+          <div class="radar" id="radarWrap" hidden><svg id="radar" role="img" aria-label="附近餐廳的 JEV 分布圖"></svg></div>
+        </div>
+        <div class="map-foot">
+          <div class="legend" id="mapLegend" hidden>
+            <span><i style="background:var(--accent)"></i>抽籤池</span>
+            <span><i style="background:var(--accent-2);opacity:.6"></i>其他可去</span>
+            <span><i style="background:var(--muted);opacity:.5"></i>被排除</span>
+            <span><i style="background:var(--ok)"></i>選中</span>
+          </div>
+          <a id="mapLink" target="_blank" rel="noopener">在 Google 地圖開啟 ↗</a>
+        </div>
+      </section>
+
+      <section class="card" id="listCard" aria-label="候選排行">
+        <div class="list-head">
+          <h2>候選排行</h2>
+          <span id="count"></span>
+        </div>
+        <div class="ctx" id="ctx" hidden></div>
+        <div class="bar-legend" id="barLegend" hidden></div>
+        <ul class="list" id="list"></ul>
+        <details class="excluded" id="exWrap" hidden>
+          <summary id="exSum"></summary>
+          <ul class="list" id="exList"></ul>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    餐廳資料 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者 · 地圖與導航 © Google 地圖<br />
+    均消依餐廳類型估計、飲食限制依店名判斷，僅供參考。你的位置只用來搜尋附近餐廳，不會被儲存。
+  </footer>
+</div>
+
+<div class="sheet-backdrop" id="sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-grip"></div>
+    <h3 id="sheetTitle">要在哪裡找吃的？</h3>
+    <button class="btn primary w100" id="useGps" type="button">📍 使用我目前的位置</button>
+    <form id="placeForm">
+      <input id="placeInput" type="search" placeholder="輸入地點，例如：台北車站、逢甲夜市" autocomplete="off" />
+      <button class="btn" type="submit">搜尋</button>
+    </form>
+    <ul class="places" id="places"></ul>
+    <button class="btn ghost w100 mt8" id="closeSheet" type="button">取消</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ================= 設定與資料 ================= */
+
+  const DEFAULT_LOC = { lat: 25.033968, lng: 121.564468, label: '台北101（預設）' };
+  // 公開的 OSM 伺服器偶爾會忙（504），所以準備幾台輪流問
+  const OVERPASS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.private.coffee/api/interpreter',
+  ];
+  const CACHE_TTL = 6 * 3600e3;
+
+  // at：選的不是「現在這一餐」時，用這個時間判斷營業
+  const MEALS = [
+    { id: 'breakfast', label: '早餐', emoji: '🌅', q: '早餐', at: 8 },
+    { id: 'lunch',     label: '午餐', emoji: '☀️', q: '午餐 餐廳', at: 12 },
+    { id: 'dinner',    label: '晚餐', emoji: '🌆', q: '晚餐 餐廳', at: 18.5 },
+    { id: 'night',     label: '宵夜', emoji: '🌙', q: '宵夜', at: 22.5 },
+  ];
+
+  // 交通方式：v = 每分鐘幾公尺，f = 停車／等車的固定分鐘，g = Google 導航模式
+  const MODES = {
+    walk:    { label: '走路',     emoji: '🚶', v: 80,  f: 0, g: 'walking' },
+    scooter: { label: '機車',     emoji: '🛵', v: 330, f: 3, g: 'driving' },
+    transit: { label: '大眾運輸', emoji: '🚌', v: 230, f: 8, g: 'transit' },
+    car:     { label: '開車',     emoji: '🚗', v: 300, f: 8, g: 'driving' },
+  };
+  const DETOUR = 1.3; // 直線距離 × 1.3 ≈ 實際要走的路
+  // Overpass 的上限是照 id 截斷、不是照距離，所以半徑只抓到「到得了」的範圍，上限也放寬
+  const OUT_LIMIT = 4000;
+  const WEATHERS = [
+    { id: 'sun',  label: '晴',   emoji: '☀️' },
+    { id: 'rain', label: '下雨', emoji: '🌧️' },
+    { id: 'hot',  label: '很熱', emoji: '🥵' },
+  ];
+
+  // JEV 的分項（顏色也用在排行的長條）
+  const FACTORS = [
+    { k: 'time',  n: '時間',   col: '#3f8fbf' },
+    { k: 'price', n: '預算',   col: '#d9982e' },
+    { k: 'taste', n: '口味',   col: '#1f9d6b' },
+    { k: 'dish',  n: '菜色',   col: '#ff6433' },
+    { k: 'fresh', n: '新鮮感', col: '#8a5cc2' },
+  ];
+  const WEIGHT_DEFAULT = { time: 3, price: 2, taste: 3, dish: 4, fresh: 2 };
+
+  // 類別：kw 用來比對店名（小寫），q 是丟給 Google 搜尋的字
+  const CATS = [
+    { id: 'any',       label: '隨便都好',   emoji: '🎲' },
+    { id: 'chinese',   label: '中式台菜',   emoji: '🥟', q: '台菜 小吃',
+      kw: ['小吃', '滷肉', '魯肉', '便當', '熱炒', '快炒', '餃', '牛肉麵', '小籠', '包子', '粥', '鵝肉', '雞肉飯', '麵線', '臭豆腐', '港式', '茶餐廳', '川菜', '飲茶', '燒臘', '鹽酥雞', '滷味', '餛飩', '抄手', '台菜', '客家'] },
+    { id: 'japanese',  label: '日式',       emoji: '🍣', q: '日式料理',
+      kw: ['壽司', '拉麵', 'ラーメン', '丼', '居酒屋', '烏龍', '定食', '日式', '日本', '燒鳥', '天婦羅', '豬排', '鐵板燒', 'すし', 'sushi', 'ramen'] },
+    { id: 'korean',    label: '韓式',       emoji: '🥘', q: '韓式料理',
+      kw: ['韓式', '韓國', '韓', '部隊鍋', '拌飯', 'korean'] },
+    { id: 'western',   label: '美式速食',   emoji: '🍔', q: '漢堡 速食',
+      kw: ['漢堡', 'burger', '麥當勞', "mcdonald", '肯德基', 'kfc', '摩斯', 'subway', '炸雞', '美式', 'diner'] },
+    { id: 'italian',   label: '義式',       emoji: '🍕', q: '義式料理',
+      kw: ['義式', '義大利', '披薩', 'pizza', 'pasta', 'trattoria', 'osteria', '燉飯'] },
+    { id: 'sea',       label: '南洋印度',   emoji: '🍛', q: '泰式 越南 印度料理',
+      kw: ['泰式', '泰國', '越南', '河粉', 'pho', '印度', 'india', '南洋', '星馬', '新加坡', '馬來', '咖哩', 'curry', '印尼', '緬甸', '打拋'] },
+    { id: 'hotpot',    label: '火鍋',       emoji: '🍲', q: '火鍋',
+      kw: ['火鍋', '鍋物', '涮', '麻辣鍋', '石頭鍋', '鴛鴦', 'shabu', '薑母鴨', '羊肉爐', '部隊鍋'] },
+    { id: 'bbq',       label: '燒肉燒烤',   emoji: '🥩', q: '燒肉',
+      kw: ['燒肉', '燒烤', '串燒', '炭烤', '碳烤', '烤肉', '牛排', 'steak', 'bbq', 'yakiniku'] },
+    { id: 'noodle',    label: '麵食',       emoji: '🍜', q: '麵店',
+      kw: ['麵館', '麵店', '拉麵', '牛肉麵', '意麵', '麵線', '乾麵', '湯麵', '涼麵', '刀削', '麵屋', '麵食', '米粉', '粿條', '河粉', 'noodle', 'ramen', 'udon', '烏龍'] },
+    { id: 'rice',      label: '飯類便當',   emoji: '🍱', q: '便當',
+      kw: ['飯', '便當', '丼', '咖哩', '粥', 'bento'] },
+    { id: 'breakfast', label: '早餐',       emoji: '🥪', q: '早餐',
+      kw: ['早餐', '早午餐', '豆漿', '蛋餅', '美而美', 'brunch', '早點'] },
+    { id: 'cafe',      label: '咖啡甜點',   emoji: '🍰', q: '咖啡廳 甜點',
+      kw: ['咖啡', 'cafe', 'café', 'coffee', '甜點', '蛋糕', '豆花', '冰', 'dessert', '烘焙', 'bakery', '星巴克', 'starbucks', '路易莎', 'louisa', '手搖', '茶飲'] },
+    { id: 'veg',       label: '素食',       emoji: '🥗', q: '素食',
+      kw: ['素食', '蔬食', '素菜', '齋', 'vegan', 'veggie'] },
+  ];
+  const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+  const EMOJI_PRIORITY = ['hotpot', 'bbq', 'noodle', 'breakfast', 'cafe', 'veg', 'japanese', 'korean', 'italian', 'sea', 'western', 'rice', 'chinese'];
+
+  // OSM 的 cuisine 標籤 → 我們的類別
+  const CUISINE_MAP = {
+    chinese: 'chinese', taiwanese: 'chinese', cantonese: 'chinese', sichuan: 'chinese', hunan: 'chinese', shanghai: 'chinese',
+    dim_sum: 'chinese', dumpling: 'chinese', dumplings: 'chinese', hong_kong: 'chinese', beijing: 'chinese', congee: ['chinese', 'rice'],
+    japanese: 'japanese', sushi: 'japanese', ramen: ['japanese', 'noodle'], udon: ['japanese', 'noodle'], soba: ['japanese', 'noodle'],
+    donburi: ['japanese', 'rice'], izakaya: 'japanese', yakitori: ['japanese', 'bbq'], tonkatsu: 'japanese', teppanyaki: 'japanese', tempura: 'japanese',
+    korean: 'korean',
+    burger: 'western', american: 'western', sandwich: 'western', fried_chicken: 'western', chicken: 'western', western: 'western',
+    french: 'western', mexican: 'western', diner: 'western', hot_dog: 'western', german: 'western', spanish: 'western',
+    steak_house: ['bbq', 'western'], steak: ['bbq', 'western'],
+    italian: 'italian', pizza: 'italian', pasta: 'italian',
+    thai: 'sea', vietnamese: 'sea', indian: 'sea', indonesian: 'sea', malaysian: 'sea', singaporean: 'sea', burmese: 'sea',
+    filipino: 'sea', nepalese: 'sea', curry: ['sea', 'rice'], pho: ['sea', 'noodle'],
+    hot_pot: 'hotpot', hotpot: 'hotpot', shabu_shabu: 'hotpot', 'shabu-shabu': 'hotpot', fondue: 'hotpot',
+    barbecue: 'bbq', bbq: 'bbq', yakiniku: 'bbq', grill: 'bbq', kebab: 'bbq',
+    noodle: 'noodle', noodles: 'noodle', beef_noodle: 'noodle', beef_noodle_soup: 'noodle',
+    rice: 'rice', bento: 'rice', lunch_box: 'rice',
+    breakfast: 'breakfast', brunch: 'breakfast',
+    coffee_shop: 'cafe', coffee: 'cafe', dessert: 'cafe', cake: 'cafe', ice_cream: 'cafe', bubble_tea: 'cafe', tea: 'cafe',
+    juice: 'cafe', bakery: 'cafe', frozen_yogurt: 'cafe', crepe: 'cafe', donut: 'cafe', waffle: 'cafe', pastry: 'cafe', shaved_ice: 'cafe',
+    vegetarian: 'veg', vegan: 'veg',
+  };
+  const AMENITY_LABEL = { restaurant: '餐廳', fast_food: '小吃 / 速食', cafe: '咖啡廳', food_court: '美食街', ice_cream: '冰品' };
+
+  // OSM 沒有價位，依類型估一個均消（有多個類型就取平均）
+  const PRICE_EST = { breakfast: 80, cafe: 170, chinese: 160, rice: 120, noodle: 150, japanese: 300, korean: 260, western: 200, italian: 360, sea: 220, hotpot: 450, bbq: 600, veg: 150 };
+  const AMENITY_PRICE = { restaurant: 250, fast_food: 130, cafe: 170, food_court: 160, ice_cream: 90 };
+
+  // 飲食限制：kw 比對店名（小寫），cu 比對 OSM cuisine 標籤
+  const RESTRICTS = [
+    { id: '牛', label: '不吃牛',
+      kw: ['牛', 'beef', 'steak', '燒肉', 'yakiniku'], cu: ['steak_house', 'steak', 'beef', 'beef_noodle', 'beef_noodle_soup', 'yakiniku'] },
+    { id: '豬', label: '不吃豬',
+      kw: ['豬', '豚', '滷肉', '魯肉', '肉燥', '排骨', '叉燒', '燒臘', '香腸', '拉麵', 'ラーメン', 'ramen', 'pork', '打拋'], cu: ['tonkatsu', 'ramen', 'pork'] },
+    { id: '海鮮', label: '不吃海鮮',
+      kw: ['海鮮', '海產', '魚', '蝦', '蟹', '蚵', '壽司', '生魚', '刺身', '鮭', '鮪', '鰻', '花枝', '魷', '章魚', '蛤', '干貝', 'sushi', 'すし', 'seafood', 'fish', 'oyster'],
+      cu: ['seafood', 'sushi', 'fish', 'fish_and_chips', 'oyster'] },
+    { id: '辣', label: '不吃辣',
+      kw: ['辣', '川菜', '川味', '四川', '重慶', '湘菜', '冒菜', '打拋'], cu: ['sichuan', 'hunan', 'spicy', 'chongqing'] },
+    { id: '素', label: '只吃素' },
+  ];
+
+  // 菜色：名稱、emoji、所屬類別、店名關鍵字
+  const D = (name, emoji, cats, kw) => ({ name, emoji, cats, kw: kw.map(k => k.toLowerCase()) });
+  const RAMEN   = D('拉麵', '🍜', ['japanese', 'noodle'], ['拉麵', 'ラーメン', '麵屋', 'ramen']);
+  const BEEF    = D('牛肉麵', '🍜', ['noodle', 'chinese'], ['牛肉麵']);
+  const PASTA   = D('義大利麵', '🍝', ['italian'], ['義大利麵', 'pasta', '義式']);
+  const FAST    = D('速食', '🍟', ['western'], ['麥當勞', '肯德基', '摩斯', '漢堡', 'burger', 'mcdonald', 'kfc']);
+  const KCHICK  = D('韓式炸雞', '🍗', ['korean'], ['炸雞', '韓']);
+  const CURRY   = D('咖哩飯', '🍛', ['japanese', 'rice', 'sea'], ['咖哩', 'curry', 'カレー']);
+
+  const DISHES = {
+    breakfast: [
+      D('蛋餅', '🌯', ['breakfast', 'chinese'], ['蛋餅', '早餐', '美而美', '早安']),
+      D('飯糰', '🍙', ['breakfast', 'chinese'], ['飯糰', '豆漿']),
+      D('燒餅油條', '🥖', ['breakfast', 'chinese'], ['燒餅', '豆漿', '永和']),
+      D('鹹豆漿', '🥣', ['breakfast', 'chinese'], ['豆漿']),
+      D('蘿蔔糕', '🍘', ['breakfast', 'chinese'], ['蘿蔔糕', '早餐']),
+      D('鐵板麵', '🍝', ['breakfast', 'noodle'], ['鐵板麵', '早餐']),
+      D('三明治', '🥪', ['breakfast', 'western'], ['三明治', '早餐', 'sandwich']),
+      D('早午餐盤', '🍳', ['breakfast', 'cafe'], ['早午餐', 'brunch']),
+      D('貝果', '🥯', ['cafe', 'breakfast'], ['貝果', 'bagel']),
+      D('鬆餅', '🥞', ['cafe', 'breakfast'], ['鬆餅', 'pancake', 'waffle']),
+      D('肉粥', '🍚', ['chinese', 'rice'], ['粥']),
+      D('漢堡', '🍔', ['western', 'breakfast'], ['漢堡', '麥當勞', '摩斯', 'burger']),
+      D('饅頭夾蛋', '🥚', ['breakfast', 'chinese'], ['饅頭', '包子']),
+      D('咖啡配可頌', '🥐', ['cafe'], ['咖啡', 'cafe', 'coffee', '麵包', 'bakery']),
+      D('素食早餐', '🥗', ['veg', 'breakfast'], ['素食', '蔬食']),
+    ],
+    lunch: [
+      BEEF,
+      D('滷肉飯', '🍚', ['rice', 'chinese'], ['滷肉', '魯肉']),
+      D('雞腿便當', '🍱', ['rice', 'chinese'], ['便當', '池上']),
+      RAMEN,
+      D('日式丼飯', '🍛', ['japanese', 'rice'], ['丼', '食堂']),
+      CURRY,
+      D('水餃鍋貼', '🥟', ['chinese'], ['餃', '鍋貼', '八方', '四海']),
+      D('韓式拌飯', '🥘', ['korean', 'rice'], ['拌飯', '韓']),
+      PASTA,
+      D('越南河粉', '🍜', ['sea', 'noodle'], ['河粉', '越南', 'pho']),
+      D('泰式打拋豬', '🌶️', ['sea', 'rice'], ['泰式', '泰國', '打拋']),
+      D('壽司', '🍣', ['japanese'], ['壽司', 'sushi', 'すし']),
+      D('雞肉飯', '🍗', ['rice', 'chinese'], ['雞肉飯', '火雞']),
+      D('自助餐', '🥘', ['rice', 'chinese'], ['自助餐']),
+      D('乾麵餛飩湯', '🥢', ['noodle', 'chinese'], ['乾麵', '餛飩', '麵店', '麵館']),
+      D('港式燒臘飯', '🍖', ['chinese', 'rice'], ['燒臘', '港式', '茶餐廳']),
+      FAST,
+      D('素食便當', '🥗', ['veg', 'rice'], ['素食', '蔬食']),
+    ],
+    dinner: [
+      D('火鍋', '🍲', ['hotpot'], ['火鍋', '鍋物', '涮', 'shabu']),
+      D('麻辣鍋', '🌶️', ['hotpot', 'chinese'], ['麻辣']),
+      D('燒肉', '🥩', ['bbq'], ['燒肉', 'yakiniku']),
+      KCHICK,
+      D('熱炒', '🍤', ['chinese'], ['熱炒', '快炒', '海產', '海鮮']),
+      D('牛排', '🥩', ['bbq', 'western'], ['牛排', 'steak']),
+      D('居酒屋', '🍶', ['japanese'], ['居酒屋', '串燒', '燒鳥']),
+      D('披薩', '🍕', ['italian', 'western'], ['披薩', 'pizza']),
+      RAMEN, BEEF, PASTA,
+      D('港式飲茶', '🥟', ['chinese'], ['港式', '飲茶', '點心', '茶餐廳']),
+      D('印度咖哩', '🍛', ['sea'], ['印度', 'india', '咖哩']),
+      D('部隊鍋', '🥘', ['korean', 'hotpot'], ['部隊鍋', '韓']),
+      D('泰式料理', '🌶️', ['sea'], ['泰式', '泰國']),
+      D('薑母鴨', '🍲', ['hotpot', 'chinese'], ['薑母鴨', '羊肉爐']),
+      D('日式定食', '🍱', ['japanese', 'rice'], ['定食', '食堂', '豬排']),
+      D('素食', '🥗', ['veg'], ['素食', '蔬食']),
+    ],
+    night: [
+      D('鹽酥雞', '🍗', ['chinese'], ['鹽酥雞', '雞排', '炸']),
+      D('滷味', '🍢', ['chinese'], ['滷味']),
+      D('清粥小菜', '🍚', ['chinese', 'rice'], ['清粥', '粥']),
+      RAMEN,
+      D('燒烤串', '🍢', ['bbq'], ['燒烤', '串燒', '烤']),
+      D('豆花', '🍮', ['cafe'], ['豆花']),
+      D('麻辣燙', '🌶️', ['chinese', 'hotpot'], ['麻辣燙']),
+      KCHICK,
+      D('永和豆漿', '🥣', ['breakfast', 'chinese'], ['豆漿', '永和']),
+      D('剉冰', '🍧', ['cafe'], ['冰']),
+      D('鍋燒意麵', '🍜', ['noodle', 'chinese'], ['鍋燒', '意麵']),
+      D('臭豆腐', '🥢', ['chinese'], ['臭豆腐']),
+      FAST,
+    ],
+  };
+  const ALL_DISHES = [...new Map(Object.values(DISHES).flat().map(d => [d.name, d])).values()];
+  // 菜色本身踩到哪些飲食限制
+  const DISH_TAGS = {
+    '牛肉麵': ['牛'], '牛排': ['牛'], '燒肉': ['牛', '豬'],
+    '滷肉飯': ['豬'], '港式燒臘飯': ['豬'], '拉麵': ['豬'], '水餃鍋貼': ['豬'], '乾麵餛飩湯': ['豬'], '肉粥': ['豬'],
+    '泰式打拋豬': ['豬', '辣'], '部隊鍋': ['豬', '辣'], '麻辣鍋': ['辣'], '麻辣燙': ['辣'],
+    '壽司': ['海鮮'], '熱炒': ['海鮮'],
+  };
+
+  /* ================= 小工具 ================= */
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('sancan.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('sancan.' + k, JSON.stringify(v)); } catch { /* 無痕模式等情況，忽略 */ } },
+  };
+
+  function haversine(a, b) {
+    const R = 6371000, r = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+    const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  const fmtDist = m => m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} 公尺` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} 公里`;
+  const fmtShort = m => m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)}m` : `${(m / 1000).toFixed(1)}km`;
+  const fmtClock = x => { const t = Math.round(x * 60); return `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
+  const pct = p => p < 0.005 ? '<1%' : `${Math.round(p * 100)}%`;
+  const clamp = x => Math.max(0, Math.min(1, x));
+  const trunc = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+  const zoomFor = r => r <= 300 ? 17 : r <= 500 ? 16 : r <= 1000 ? 15 : r <= 2000 ? 14 : 13;
+
+  function weightedPick(arr, weight) {
+    const ws = arr.map(weight);
+    let r = Math.random() * ws.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < arr.length; i++) { r -= ws[i]; if (r <= 0) return arr[i]; }
+    return arr[arr.length - 1];
+  }
+
+  function mealByTime(d = new Date()) {
+    const h = d.getHours() + d.getMinutes() / 60;
+    if (h < 4) return 'night';
+    if (h < 10.5) return 'breakfast';
+    if (h < 15) return 'lunch';
+    if (h < 21) return 'dinner';
+    return 'night';
+  }
+
+  /* ================= 狀態 ================= */
+
+  // JEV 設定存起來，下次打開還在
+  const S = Object.assign({ mode: 'walk', maxT: 15, budget: 250, weather: 'sun', pref: {}, restrict: [], temp: 35, view: 'google' }, store.get('jev', {}));
+  S.w = Object.assign({}, WEIGHT_DEFAULT, S.w);
+  if (!MODES[S.mode]) S.mode = 'walk';
+  const saveS = () => store.set('jev', S);
+
+  const state = {
+    loc: null,
+    meal: mealByTime(),
+    avoidRecent: store.get('avoidRecent', true),
+    shops: [], fetchedRadius: 0, loadToken: 0, loading: false, demo: false,
+    dish: null, shop: null, pickProb: null, skip: new Set(), spinning: false, listLimit: 20,
+    notes: {},
+    scored: [], byId: new Map(), pool: [], poolTotal: 0, poolKind: 'all', evalAt: new Date(), evalNow: true,
+  };
+
+  /* ================= 交通與營業時間 ================= */
+
+  const mode = () => MODES[S.mode];
+  const travelMin = s => Math.max(1, Math.round(s.dist * DETOUR / mode().v + mode().f));
+  const travelText = s => `${mode().label} ${travelMin(s)} 分`;
+  const reachM = () => Math.max(0, S.maxT - mode().f) * mode().v / DETOUR;
+  const fetchRadius = () => Math.min(5000, Math.max(1000, Math.ceil(reachM() / 500) * 500));
+
+  // 用哪個時間判斷營業：選的是現在這餐就用現在，不然用那一餐的代表時間（已經過了就算明天）
+  function evalDate() {
+    const now = new Date();
+    if (state.meal === mealByTime(now)) return { date: now, now: true };
+    const at = MEALS.find(m => m.id === state.meal).at;
+    const d = new Date(now);
+    d.setHours(Math.floor(at), Math.round((at % 1) * 60), 0, 0);
+    if (d.getTime() < now.getTime() - 3600e3) d.setDate(d.getDate() + 1);
+    return { date: d, now: false };
+  }
+
+  // OSM opening_hours → 每天的營業時段（週一 = 0）；看不懂的格式回傳 null，當作「未知」不排除
+  const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+  const DAY = '(?:Mo|Tu|We|Th|Fr|Sa|Su)';
+  const RULE_SPLIT = new RegExp(`\\s*;\\s*|(?<=\\d)\\s*,\\s*(?=(?:${DAY}|PH)\\b)`);
+  const DAY_SPEC = new RegExp(`^((?:${DAY}|PH)(?:\\s*-\\s*${DAY})?(?:\\s*,\\s*(?:${DAY}|PH)(?:\\s*-\\s*${DAY})?)*)?\\s*(.*)$`);
+  const hoursCache = new Map();
+
+  function parseHours(raw) {
+    const str = String(raw || '').trim();
+    if (!hoursCache.has(str)) hoursCache.set(str, parseHoursRaw(str));
+    return hoursCache.get(str);
+  }
+
+  function parseHoursRaw(str) {
+    if (!str) return null;
+    if (/^(24\/7|24\s*小時|24\s*hours?)$/i.test(str)) return DAYS.map(() => [[0, 24]]);
+    const week = DAYS.map(() => null);
+    let any = false;
+    for (const rule of str.split(RULE_SPLIT)) {
+      if (!rule.trim()) continue;
+      const [, spec, body] = rule.trim().match(DAY_SPEC);
+      const days = new Set();
+      if (spec) {
+        for (const part of spec.split(/\s*,\s*/)) {
+          if (part === 'PH') continue;
+          const [a, b] = part.split(/\s*-\s*/).map(x => DAYS.indexOf(x));
+          if (b === undefined) days.add(a);
+          else for (let i = a; ; i = (i + 1) % 7) { days.add(i); if (i === b) break; }
+        }
+        if (!days.size) continue; // 只寫國定假日的規則，略過
+      } else DAYS.forEach((_, i) => days.add(i));
+      const ranges = [];
+      if (!/^(off|closed)$/i.test(body.trim())) {
+        const left = body.replace(/(\d{1,2}):(\d{2})\s*[-~–]\s*(\d{1,2}):(\d{2})\+?/g, (_, h1, m1, h2, m2) => {
+          const a = +h1 + m1 / 60;
+          let b = +h2 + m2 / 60;
+          if (b <= a) b += 24; // 跨夜
+          ranges.push([a, b]);
+          return '';
+        });
+        if (left.replace(/[\s,]|\bopen\b/gi, '') || !ranges.length) return null;
+      }
+      days.forEach(d => { week[d] = ranges; });
+      any = true;
+    }
+    return any ? week.map(r => r || []) : null;
+  }
+
+  function openState(hours, date) {
+    const week = parseHours(hours);
+    if (!week) return { known: false, open: null };
+    const h = date.getHours() + date.getMinutes() / 60;
+    const d = (date.getDay() + 6) % 7, y = (d + 6) % 7, n = (d + 1) % 7;
+    // 開到 24:00 而隔天 00:00 接著開，就不算打烊
+    const until = b => {
+      const nx = b >= 24 && week[n].find(([a2]) => a2 === 0);
+      return nx ? (nx[1] >= 24 ? Infinity : 24 + nx[1]) : b;
+    };
+    for (const [a, b] of week[d]) if (h >= a && h < b) { const end = until(b); return { known: true, open: true, closesIn: end - h, closeAt: end }; }
+    for (const [, b] of week[y]) if (b > 24 && h + 24 < b) return { known: true, open: true, closesIn: b - 24 - h, closeAt: b - 24 };
+    return { known: true, open: false };
+  }
+
+  /* ================= Google 地圖連結 ================= */
+
+  const gSearch = (term, loc, z) => `https://www.google.com/maps/search/${encodeURIComponent(term)}/@${loc.lat},${loc.lng},${z}z?hl=zh-TW`;
+  const gPlace = s => `https://www.google.com/maps/search/${encodeURIComponent(s.name)}/@${s.lat},${s.lng},18z?hl=zh-TW`;
+  const gDir = s => `https://www.google.com/maps/dir/?api=1&origin=${state.loc.lat},${state.loc.lng}&destination=${s.lat},${s.lng}&travelmode=${mode().g}`;
+  const gEmbedSearch = (term, loc, z) => `https://maps.google.com/maps?q=${encodeURIComponent(term)}&ll=${loc.lat},${loc.lng}&z=${z}&hl=zh-TW&output=embed`;
+  // 「店名@座標」會在正確位置插圖釘；只給店名的話 Google 可能跳到同名的別家
+  const gEmbedPlace = s => `https://maps.google.com/maps?q=${encodeURIComponent(s.name)}%40${s.lat},${s.lng}&z=17&hl=zh-TW&output=embed`;
+
+  /* ================= 資料：定位、餐廳 ================= */
+
+  function locate() {
+    setLocText('定位中…');
+    if (!('geolocation' in navigator)) return useFallback('這個瀏覽器不支援定位');
+    navigator.geolocation.getCurrentPosition(
+      p => { note('loc', null); setLocation(p.coords.latitude, p.coords.longitude, null); },
+      err => useFallback(err.code === 1 ? '你沒有允許定位' : '暫時抓不到你的位置'),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  }
+
+  function useFallback(reason) {
+    note('loc', `${reason}，先用「台北101」附近示範。點右上角「更換」可以改成你的位置或任何地點。`);
+    setLocation(DEFAULT_LOC.lat, DEFAULT_LOC.lng, DEFAULT_LOC.label);
+  }
+
+  function setLocation(lat, lng, label) {
+    state.loc = { lat, lng };
+    state.shops = []; state.fetchedRadius = 0;
+    state.dish = null; state.shop = null; state.pickProb = null; state.skip.clear();
+    note('trunc', null);
+    setLocText(label || '目前位置');
+    if (!label) reverseGeocode(lat, lng).then(l => { if (l && state.loc.lat === lat) setLocText(l); });
+    compute(); renderResult(); renderMap();
+    loadShops();
+  }
+
+  async function reverseGeocode(lat, lng) {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=17&accept-language=zh-TW`);
+      const j = await r.json();
+      const a = j.address || {};
+      const city = a.city || a.county || a.state || '';
+      const area = a.suburb || a.city_district || a.district || a.town || a.village || '';
+      const road = a.road || a.neighbourhood || a.quarter || '';
+      return [city + (area && area !== city ? area : ''), road].filter(Boolean).join(' ') || j.name || null;
+    } catch { return null; }
+  }
+
+  async function searchPlace(q) {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=zh-TW&q=${encodeURIComponent(q)}`);
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }
+
+  // 先問第一台；4 秒沒回應（或直接失敗）就同時問下一台，誰先回來用誰
+  function hedgedFetch(q) {
+    return new Promise((resolve, reject) => {
+      let next = 0, pending = 0, done = false, lastErr, hedgeTimer;
+      const ctls = [];
+      const launch = () => {
+        if (done || next >= OVERPASS.length) return;
+        const url = OVERPASS[next++];
+        pending++;
+        const ctl = new AbortController();
+        ctls.push(ctl);
+        const kill = setTimeout(() => ctl.abort(), 20000);
+        clearTimeout(hedgeTimer);
+        hedgeTimer = setTimeout(launch, 4000);
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'data=' + encodeURIComponent(q),
+          signal: ctl.signal,
+        })
+          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(j => {
+            if (done) return;
+            done = true; clearTimeout(hedgeTimer);
+            ctls.forEach(c => c.abort());
+            resolve(j);
+          })
+          .catch(e => {
+            lastErr = e; pending--;
+            if (done) return;
+            if (next < OVERPASS.length) launch();
+            else if (!pending) { clearTimeout(hedgeTimer); reject(lastErr); }
+          })
+          .finally(() => clearTimeout(kill));
+      };
+      launch();
+    });
+  }
+
+  async function overpass(lat, lng, radius) {
+    const q = `[out:json][timeout:25];nwr["amenity"~"^(restaurant|fast_food|cafe|food_court|ice_cream)$"](around:${radius},${lat},${lng});out center ${OUT_LIMIT};`;
+    try {
+      return await hedgedFetch(q);
+    } catch {
+      $('#count').textContent = '伺服器有點忙，再試一次…';
+      await new Promise(r => setTimeout(r, 2000));
+      return hedgedFetch(q);
+    }
+  }
+
+  // 查過的結果存在瀏覽器裡 6 小時，重開 app 不用再等（和原版分開存：原版的 5 公里快取可能被截斷過）
+  const cacheKey = loc => `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+  function readCache(loc, radius) {
+    const c = store.get('jevShopCache', null);
+    if (!c || c.v !== 2 || c.key !== cacheKey(loc) || c.radius < radius || Date.now() - c.ts > CACHE_TTL) return null;
+    // 存的是原始標籤，讀出來再重新分類，改了關鍵字也會生效
+    const shops = c.shops.map(([id, name, lat, lng, amenity, cuisine, veg, hours, addr]) =>
+      makeShop(id, name, lat, lng, classify({ amenity, cuisine, 'diet:vegetarian': veg ? 'yes' : '' }, name), amenity, hours, addr, cuisine, veg)
+    ).sort((a, b) => a.dist - b.dist);
+    return { shops, radius: c.radius };
+  }
+  function writeCache(loc, radius, shops) {
+    store.set('jevShopCache', {
+      v: 2, key: cacheKey(loc), radius, ts: Date.now(),
+      shops: shops.map(s => [s.id, s.name, s.lat, s.lng, s.amenity, s.cuisine, s.veg ? 1 : 0, s.hours, s.addr]),
+    });
+  }
+
+  let fetchTimer;
+  // 拉長時間／換交通方式讓範圍變大時，才去抓更大半徑的資料
+  function maybeFetch() {
+    clearTimeout(fetchTimer);
+    if (!state.loc || fetchRadius() <= state.fetchedRadius) return;
+    fetchTimer = setTimeout(loadShops, 600);
+  }
+
+  async function loadShops() {
+    clearTimeout(fetchTimer);
+    if (!state.loc) return;
+    const radius = fetchRadius();
+    if (state.fetchedRadius >= radius) { refresh(); return; }
+    const cached = readCache(state.loc, radius);
+    if (cached) {
+      Object.assign(state, { shops: cached.shops, fetchedRadius: cached.radius, demo: false });
+      setDataNote(null);
+      refresh();
+      return;
+    }
+    const token = ++state.loadToken;
+    state.loading = true;
+    renderList(); renderCats();
+    try {
+      let data = await overpass(state.loc.lat, state.loc.lng, radius);
+      const truncated = (data.elements || []).length >= OUT_LIMIT;
+      if (truncated && radius > 1000) {
+        // 被截斷了：再補抓一半半徑，至少確保附近的店是完整的
+        const inner = await overpass(state.loc.lat, state.loc.lng, Math.max(1000, Math.round(radius / 1000) * 500)).catch(() => null);
+        if (inner) data = { elements: [...(data.elements || []), ...(inner.elements || [])] };
+      }
+      if (token !== state.loadToken) return;
+      state.shops = parseShops(data);
+      state.fetchedRadius = radius;
+      state.demo = false;
+      writeCache(state.loc, radius, state.shops);
+      setDataNote(null);
+      note('trunc', truncated ? '這一帶餐廳太多，比較遠的店只抓到一部分（附近的是完整的）；把時間縮短會更準。' : null);
+    } catch (e) {
+      if (token !== state.loadToken) return;
+      console.warn('Overpass 失敗，改用示範資料', e);
+      state.shops = demoShops(state.loc);
+      state.fetchedRadius = Infinity;
+      state.demo = true;
+      setDataNote('餐廳資料庫現在太忙，先顯示「示範餐廳」（店名是虛構的），Google 按鈕會改成直接搜尋附近。');
+    }
+    state.loading = false;
+    refresh();
+  }
+
+  function setDataNote(msg) {
+    note('data', msg);
+    $('#retryBtn').hidden = !msg;
+  }
+
+  function addrOf(t) {
+    if (t['addr:full']) return t['addr:full'];
+    const street = t['addr:street'] || '', no = t['addr:housenumber'] || '';
+    if (!street) return '';
+    if (/[一-鿿]/.test(street)) return street + (no ? no + (/^\d+$/.test(no) ? '號' : '') : '');
+    return [no, street].filter(Boolean).join(' ');
+  }
+
+  function classify(t, name) {
+    const cats = new Set();
+    String(t.cuisine || '').toLowerCase().split(/[;,]/).forEach(c => {
+      const m = CUISINE_MAP[c.trim()];
+      if (m) [].concat(m).forEach(x => cats.add(x));
+    });
+    if (t.amenity === 'cafe' || t.amenity === 'ice_cream') cats.add('cafe');
+    if (/^(yes|only)$/.test(t['diet:vegetarian'] || '') || /^(yes|only)$/.test(t['diet:vegan'] || '')) cats.add('veg');
+    const n = name.toLowerCase().replace(/飯店|麵包/g, '');
+    for (const c of CATS) if (c.kw && c.kw.some(k => n.includes(k))) cats.add(c.id);
+    return cats;
+  }
+
+  // 店名／cuisine 踩到哪些飲食限制
+  function restrictTags(nameLower, cuisine) {
+    const cu = String(cuisine || '').toLowerCase().split(/[;,]/).map(c => c.trim());
+    return new Set(RESTRICTS.filter(r => r.kw && (r.kw.some(k => nameLower.includes(k)) || r.cu.some(c => cu.includes(c)))).map(r => r.id));
+  }
+
+  function estPrice(cats, amenity) {
+    const ps = [...cats].map(c => PRICE_EST[c]).filter(Boolean);
+    let p = ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : (AMENITY_PRICE[amenity] || 250);
+    if (amenity === 'fast_food') p = Math.min(p, 180);
+    return Math.round(p / 10) * 10;
+  }
+
+  function parseShops(data) {
+    const out = [], seen = new Set();
+    for (const el of data.elements || []) {
+      if (seen.has(el.type + el.id)) continue;
+      seen.add(el.type + el.id);
+      const t = el.tags || {};
+      const name = t['name:zh-Hant'] || t['name:zh_TW'] || t.name || t['name:zh'];
+      const lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
+      if (!name || lat == null) continue;
+      const veg = /^(yes|only)$/.test(t['diet:vegetarian'] || '') || /^(yes|only)$/.test(t['diet:vegan'] || '');
+      out.push(makeShop(el.type + el.id, name, lat, lng, classify(t, name), t.amenity, t.opening_hours || '', addrOf(t), t.cuisine || '', veg));
+    }
+    return out.sort((a, b) => a.dist - b.dist);
+  }
+
+  function makeShop(id, name, lat, lng, cats, amenity, hours, addr, cuisine = '', veg = false) {
+    const nameLower = name.toLowerCase();
+    return {
+      id, name, lat, lng, cats, amenity, hours, addr, cuisine, veg, nameLower,
+      dist: haversine(state.loc, { lat, lng }),
+      tags: restrictTags(nameLower, cuisine),
+      price: estPrice(cats, amenity),
+    };
+  }
+
+  function demoShops(loc) {
+    const list = [
+      ['老王牛肉麵', ['noodle', 'chinese'], '11:00-20:30'], ['巷口早餐店', ['breakfast', 'chinese'], '05:30-11:00'],
+      ['山田拉麵', ['japanese', 'noodle'], '11:30-21:00'], ['首爾炸雞', ['korean'], '16:00-01:00'],
+      ['小義廚房', ['italian'], ''], ['曼谷小館', ['sea', 'rice'], ''], ['麻辣天堂火鍋', ['hotpot'], '11:30-02:00'],
+      ['炭火燒肉亭', ['bbq', 'japanese'], '17:00-23:30'], ['阿嬤滷肉飯', ['rice', 'chinese'], ''], ['福氣便當', ['rice', 'chinese'], ''],
+      ['晨光早午餐', ['breakfast', 'cafe'], '07:00-15:00'], ['街角咖啡', ['cafe'], ''], ['蓮心素食', ['veg', 'rice'], ''],
+      ['海味熱炒', ['chinese'], '17:00-01:00'], ['豆花伯', ['cafe'], ''], ['夜市鹽酥雞', ['chinese'], '17:00-00:30'],
+      ['港仔茶餐廳', ['chinese', 'rice'], ''], ['壽司小築', ['japanese'], ''], ['美式漢堡屋', ['western'], ''],
+      ['河內河粉', ['sea', 'noodle'], ''], ['一品水餃', ['chinese'], ''], ['咖哩工房', ['japanese', 'rice', 'sea'], ''],
+      ['韓兄弟部隊鍋', ['korean', 'hotpot'], ''], ['深夜清粥小菜', ['chinese', 'rice'], '18:00-04:00'],
+      ['老街滷味', ['chinese'], ''], ['永和豆漿大王', ['breakfast', 'chinese'], '24 小時'], ['義式披薩坊', ['italian', 'western'], ''],
+      ['薑母鴨之家', ['hotpot', 'chinese'], '17:00-02:00'],
+    ];
+    let seed = 20260929;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+    return list.map(([name, cats, hours], i) => {
+      const r = 80 + rnd() * 1700, a = rnd() * Math.PI * 2;
+      const lat = loc.lat + (r * Math.cos(a)) / 111320;
+      const lng = loc.lng + (r * Math.sin(a)) / (111320 * Math.cos(loc.lat * Math.PI / 180));
+      return makeShop('demo' + i, name, lat, lng, new Set(cats), 'restaurant', hours, '');
+    }).sort((a, b) => a.dist - b.dist);
+  }
+
+  /* ================= JEV 計分 ================= */
+
+  const kwHit = (shop, dish) => dish.kw.find(k => shop.nameLower.includes(k));
+  const catHit = (shop, dish) => dish.cats.some(c => shop.cats.has(c));
+  const effWeights = () => ({ ...S.w, dish: state.dish ? S.w.dish : 0 });
+  const temperature = () => 0.01 + S.temp / 100 * 0.25;
+  // 真實資料動輒幾百家，全部丟進去抽會被長尾稀釋，所以只取 JEV 前 N 名；越冒險池子越大
+  const poolCap = () => 10 + Math.round(S.temp * 0.4);
+
+  // 最近吃過的店和類別 → 距今幾天
+  function freshIndex() {
+    const now = Date.now(), shop = new Map(), cat = new Map();
+    const dishCats = new Map(ALL_DISHES.map(d => [d.name, d.cats]));
+    const keep = (m, k, v) => m.set(k, Math.min(m.get(k) ?? Infinity, v));
+    for (const h of store.get('history', [])) {
+      const days = (now - h.ts) / 864e5;
+      if (h.shopId) keep(shop, h.shopId, days);
+      if (h.shop) keep(shop, h.shop.replace(/（示範）$/, ''), days);
+      (h.cats || dishCats.get(h.dish) || []).forEach(c => keep(cat, c, days));
+    }
+    return { shop, cat };
+  }
+
+  function freshness(s, f) {
+    const dShop = Math.min(f.shop.get(s.id) ?? Infinity, f.shop.get(s.name) ?? Infinity);
+    const dCat = Math.min(Infinity, ...[...s.cats].map(c => f.cat.get(c) ?? Infinity));
+    return Math.min(1 - Math.exp(-dShop / 4), 0.4 + 0.6 * (1 - Math.exp(-dCat / 2)));
+  }
+
+  function scoreShop(s, ctx) {
+    const t = travelMin(s), out = [], pNotes = [];
+    // 硬條件：踩到就排除
+    const banned = S.restrict.filter(r => r !== '素' && s.tags.has(r));
+    if (banned.length) out.push('不吃' + banned.join('、'));
+    if (S.restrict.includes('素') && !s.cats.has('veg')) out.push('非素食');
+    const os = openState(s.hours, ctx.date);
+    if (os.known && !os.open) out.push('沒營業');
+    else if (os.open && os.closesIn * 60 <= t) out.push('到店就打烊');
+    if (t > S.maxT) out.push('太遠');
+    const bad = [...s.cats].find(c => S.pref[c] === -1);
+    if (bad) out.push('不想吃' + CAT[bad].label);
+
+    // 分項分數（0～1）
+    const sc = {
+      time: clamp(1 - t / (S.maxT + 1)),
+      price: s.price <= S.budget ? 1 - 0.25 * (s.price / S.budget) : clamp(1 - (s.price - S.budget) / S.budget * 2),
+      taste: [...s.cats].some(c => S.pref[c] === 1) ? 1 : ctx.hasLike ? 0.3 : 0.5,
+      dish: !state.dish ? 0 : kwHit(s, state.dish) ? 1 : catHit(s, state.dish) ? 0.55 : 0,
+      fresh: freshness(s, ctx.fresh),
+    };
+
+    // P：真的去得成、而且開著的機率
+    let P = 1;
+    const cut = (f, why) => { P *= f; pNotes.push(`${why} ×${f}`); };
+    if (!os.known) cut(0.85, '營業時間未知');
+    else if (os.open && os.closesIn * 60 - t < 30) cut(0.6, '快打烊');
+    if (S.weather === 'rain' && S.mode === 'walk' && t > 6) cut(0.75, '下雨走路');
+    if (S.weather === 'rain' && S.mode === 'scooter') cut(0.85, '雨天騎車');
+    if (S.weather === 'hot' && S.mode === 'walk' && t > 8) cut(0.85, '大熱天走路');
+
+    const W = ctx.weights, sw = Object.values(W).reduce((a, b) => a + b, 0) || 1;
+    const parts = FACTORS.map(f => ({ ...f, raw: sc[f.k], val: out.length ? 0 : P * W[f.k] * sc[f.k] / sw }));
+    const jev = parts.reduce((a, p) => a + p.val, 0);
+    return { s, t, os, sc, P, pNotes, parts, jev, out, prob: null };
+  }
+
+  function compute() {
+    const ev = evalDate();
+    state.evalAt = ev.date; state.evalNow = ev.now;
+    const ctx = { date: ev.date, hasLike: Object.values(S.pref).includes(1), fresh: freshIndex(), weights: effWeights() };
+    const res = state.shops.map(s => scoreShop(s, ctx));
+    res.sort((a, b) => b.jev - a.jev || a.s.dist - b.s.dist);
+    state.scored = res;
+    state.byId = new Map(res.map(x => [x.s.id, x]));
+    // 抽籤池：沒抽菜 = 可去的店；抽了菜 = 店名有這道菜的，沒有就退而求其次找同類型（都取 JEV 前 N 名）
+    const cand = res.filter(x => !x.out.length);
+    let pool = cand, kind = 'all';
+    if (state.dish) {
+      const hits = cand.filter(x => kwHit(x.s, state.dish));
+      pool = hits.length ? hits : cand.filter(x => catHit(x.s, state.dish));
+      kind = hits.length ? 'hit' : 'cat';
+    }
+    state.poolTotal = pool.length;
+    pool = pool.slice(0, poolCap());
+    state.pool = pool; state.poolKind = kind;
+    softmax(pool).forEach((p, i) => { pool[i].prob = p; });
+  }
+
+  function softmax(xs) {
+    if (!xs.length) return [];
+    const T = temperature(), mx = Math.max(...xs.map(x => x.jev));
+    const ex = xs.map(x => Math.exp((x.jev - mx) / T));
+    const z = ex.reduce((a, b) => a + b, 0);
+    return ex.map(e => e / z);
+  }
+
+  // 依 JEV 抽一家（跳過這輪看過的）
+  function drawShop() {
+    const pool = state.pool;
+    if (!pool.length) return null;
+    let avail = pool.filter(x => !state.skip.has(x.s.id));
+    if (!avail.length) { toast('符合的店都看過一輪了，重新來過 🔁'); state.skip.clear(); avail = pool; }
+    const ps = softmax(avail);
+    let u = Math.random(), i = 0;
+    for (; i < avail.length - 1; i++) { u -= ps[i]; if (u <= 0) break; }
+    state.pickProb = ps[i];
+    return avail[i].s;
+  }
+
+  /* ================= 菜色 ================= */
+
+  function recentDishes(hours = 48) {
+    const since = Date.now() - hours * 3600e3;
+    return new Set(store.get('history', []).filter(h => h.ts >= since).map(h => h.dish));
+  }
+
+  function dishAllowed(d) {
+    if ((DISH_TAGS[d.name] || []).some(t => S.restrict.includes(t))) return false;
+    if (S.restrict.includes('素') && !d.cats.includes('veg')) return false;
+    return !d.cats.some(c => S.pref[c] === -1);
+  }
+
+  function dishPool(excludeName) {
+    const liked = CATS.filter(c => S.pref[c.id] === 1).map(c => c.id);
+    const want = d => dishAllowed(d) && (!liked.length || d.cats.some(c => liked.includes(c)));
+    let pool = DISHES[state.meal].filter(want);
+    if (!pool.length) pool = ALL_DISHES.filter(want);
+    if (!pool.length && liked.length) pool = liked.map(c => D(CAT[c].label, CAT[c].emoji, [c], []));
+    if (state.avoidRecent) {
+      const recent = recentDishes();
+      const p = pool.filter(d => !recent.has(d.name));
+      if (p.length) pool = p;
+    }
+    if (excludeName && pool.length > 1) pool = pool.filter(d => d.name !== excludeName);
+    return pool;
+  }
+
+  function dishWeight(dish, shops) {
+    if (shops.some(s => kwHit(s, dish))) return 4;
+    if (shops.some(s => catHit(s, dish))) return 2;
+    return 1;
+  }
+
+  /* ================= 動作 ================= */
+
+  function animateSlot(pool) {
+    return new Promise(resolve => {
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const slot = $('#slot');
+      slot.classList.remove('landed');
+      slot.classList.add('spinning');
+      let i = 0, delay = 50;
+      const steps = reduce ? 0 : 16;
+      (function step() {
+        if (i >= steps) { slot.classList.remove('spinning'); resolve(); return; }
+        const d = pool[Math.floor(Math.random() * pool.length)];
+        setSlot(d.emoji, d.name);
+        i++; delay *= 1.1;
+        setTimeout(step, delay);
+      })();
+    });
+  }
+
+  function setBusy(busy) {
+    state.spinning = busy;
+    $('#spinBtn').disabled = busy; $('#directBtn').disabled = busy;
+    $('#spinBtn').classList.toggle('rolling', busy);
+  }
+
+  async function roll(faces) {
+    setBusy(true);
+    state.shop = null; state.pickProb = null;
+    $('#pick').innerHTML = `<p class="pick-idle">命運轉動中…</p>`;
+    $('#actMain').hidden = true; $('#actSub').hidden = true;
+    await animateSlot(faces);
+    setBusy(false);
+  }
+
+  function land() {
+    const slot = $('#slot');
+    void slot.offsetWidth; // 重新觸發動畫
+    slot.classList.add('landed');
+    renderResult(); renderMap(); renderList();
+    if (window.innerWidth < 980) $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function notReady() {
+    if (state.spinning) return true;
+    if (state.loading || !state.loc) { toast('附近餐廳還在載入，等我一下 ⏳'); return true; }
+    return false;
+  }
+
+  // 先抽菜色，再從有這道菜的店裡依 JEV 抽一家
+  async function spin(excludeName) {
+    if (notReady()) return;
+    const pool = dishPool(excludeName);
+    if (!pool.length) { toast('照目前的條件抽不出菜色，改成直接挑店'); pickDirect(); return; }
+    const cand = state.scored.filter(x => !x.out.length).map(x => x.s);
+    const final = weightedPick(pool, d => dishWeight(d, cand));
+
+    await roll(pool.length > 1 ? pool : ALL_DISHES);
+
+    state.dish = final; state.skip.clear();
+    compute();
+    state.shop = drawShop();
+    land();
+  }
+
+  // 不抽菜，直接在所有可去的店裡依 JEV 抽
+  async function pickDirect() {
+    if (notReady()) return;
+    state.dish = null; state.skip.clear();
+    compute();
+    if (!state.pool.length) {
+      state.shop = null; state.pickProb = null;
+      renderResult(); renderMap(); renderList();
+      toast('沒有符合條件的店，放寬時間、飲食限制或口味再試試');
+      return;
+    }
+    const faces = state.pool.slice(0, 30).map(x => ({ emoji: shopEmoji(x.s), name: primaryLabel(x.s) }));
+    await roll(faces.length > 1 ? faces : ALL_DISHES);
+    state.shop = drawShop();
+    land();
+  }
+
+  function rerollShop() {
+    if (!state.dish && !state.shop) return;
+    const pool = state.pool;
+    if (state.shop && pool.length === 1 && pool[0].s.id === state.shop.id) {
+      toast(state.dish ? `附近只有這家有「${state.dish.name}」` : '只剩這家符合條件');
+      return;
+    }
+    if (state.shop) state.skip.add(state.shop.id);
+    const next = drawShop();
+    if (!next) { toast(state.dish ? `附近找不到「${state.dish.name}」` : '沒有其他符合條件的店'); return; }
+    state.shop = next;
+    renderResult(); renderMap(); renderList();
+  }
+
+  function eat() {
+    const { dish, shop } = state;
+    if (!dish && !shop) return;
+    const h = store.get('history', []);
+    h.unshift({
+      dish: dish ? dish.name : primaryLabel(shop),
+      emoji: dish ? dish.emoji : shopEmoji(shop),
+      shop: shop ? (state.demo ? shop.name + '（示範）' : shop.name) : '',
+      shopId: shop ? shop.id : undefined,
+      cats: shop ? [...shop.cats] : dish.cats,
+      meal: state.meal, ts: Date.now(),
+    });
+    store.set('history', h.slice(0, 30));
+    renderHistory();
+    refresh(); // 新鮮感分數會變
+    const meal = MEALS.find(m => m.id === state.meal).label;
+    toast(`記下來了！${meal}吃${dish ? dish.name : shop.name}，祝用餐愉快 😋`);
+  }
+
+  function selectShop(id) {
+    const x = state.byId.get(id); if (!x) return;
+    state.shop = x.s; state.pickProb = null;
+    if (state.dish && !kwHit(x.s, state.dish)) { state.dish = null; compute(); }
+    renderResult(); renderMap(); renderList();
+    if (window.innerWidth < 980) $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ================= 畫面 ================= */
+
+  function setLocText(t) { $('#locText').textContent = t; }
+  function setSlot(emoji, name) { $('#slotEmoji').textContent = emoji; $('#slotName').textContent = name; }
+
+  function note(key, msg) {
+    if (msg) state.notes[key] = msg; else delete state.notes[key];
+    const all = Object.values(state.notes);
+    $('#banner').hidden = !all.length;
+    $('#bannerText').textContent = all.join(' ');
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  }
+
+  function shopEmoji(s) {
+    const c = EMOJI_PRIORITY.find(id => s.cats.has(id));
+    return c ? CAT[c].emoji : '🍽️';
+  }
+  function primaryLabel(s) {
+    const c = EMOJI_PRIORITY.find(id => s.cats.has(id));
+    return c ? CAT[c].label : (AMENITY_LABEL[s.amenity] || '餐廳');
+  }
+  function shopCatText(s) {
+    const labels = [...s.cats].slice(0, 3).map(c => CAT[c].label);
+    return labels.length ? labels.join(' · ') : (AMENITY_LABEL[s.amenity] || '餐廳');
+  }
+
+  function searchTerm() {
+    if (state.dish) return state.dish.name;
+    const liked = CATS.find(c => S.pref[c.id] === 1);
+    if (liked) return liked.q;
+    return MEALS.find(m => m.id === state.meal).q;
+  }
+
+  function renderGreeting() {
+    const h = new Date().getHours();
+    const hello = h < 4 ? '夜深了，' : h < 11 ? '早安！' : h < 18 ? '午安！' : '晚安！';
+    const meal = MEALS.find(m => m.id === state.meal).label;
+    $('#greet').textContent = `${hello}又到了煩惱${meal}的時間`;
+  }
+
+  function renderMeals() {
+    $('#mealSeg').innerHTML = MEALS.map(m =>
+      `<button type="button" data-meal="${m.id}" aria-pressed="${m.id === state.meal}"><span class="e">${m.emoji}</span>${m.label}</button>`
+    ).join('');
+  }
+
+  function renderEval() {
+    const d = state.evalAt, h = d.getHours() + d.getMinutes() / 60;
+    const day = state.evalNow ? '現在' : d.getDate() !== new Date().getDate() ? '明天' : '今天';
+    $('#evalTime').textContent = `依${day} ${fmtClock(h)} 判斷營業`;
+  }
+
+  function renderModes() {
+    $('#modeSeg').innerHTML = Object.entries(MODES).map(([id, m]) =>
+      `<button type="button" data-mode="${id}" aria-pressed="${id === S.mode}"><span class="e">${m.emoji}</span>${m.label}</button>`
+    ).join('');
+    $('#maxT').value = S.maxT;
+    $('#tV').textContent = `最多 ${S.maxT} 分鐘`;
+    const m = mode(), reach = reachM();
+    $('#reachHint').textContent = reach <= 0
+      ? `${m.label}光是停車／等車就要 ${m.f} 分鐘，時間再拉長一點吧`
+      : `約可涵蓋直線 ${fmtDist(reach)}內${m.f ? `（含停車／等車 ${m.f} 分）` : ''}${reach > 5000 ? '，餐廳資料最多抓 5 公里' : ''}`;
+  }
+
+  function renderRestricts() {
+    $('#restrictChips').innerHTML = RESTRICTS.map(r =>
+      `<button type="button" class="chip" data-rs="${r.id}" aria-pressed="${S.restrict.includes(r.id)}">${r.label}</button>`
+    ).join('');
+  }
+
+  function renderAdvanced() {
+    $('#budget').value = S.budget;
+    $('#bV').textContent = `NT$ ${S.budget}`;
+    $('#weatherSeg').innerHTML = WEATHERS.map(w =>
+      `<button type="button" data-w="${w.id}" aria-pressed="${w.id === S.weather}"><span class="e">${w.emoji}</span>${w.label}</button>`
+    ).join('');
+    $('#weights').innerHTML = FACTORS.map(f => `
+      <label class="w-row"><span><i style="background:${f.col}"></i>${f.n}</span>
+        <input type="range" class="range" min="0" max="5" step="1" value="${S.w[f.k]}" data-k="${f.k}" aria-label="${f.n}權重" /><b>${S.w[f.k]}</b></label>`
+    ).join('');
+    $('#temp').value = S.temp;
+    $('#tempV').textContent = S.temp;
+    renderAdvSum();
+  }
+  function renderAdvSum() {
+    const w = WEATHERS.find(x => x.id === S.weather);
+    $('#advSum').textContent = `預算 $${S.budget} · ${w.emoji}${w.label} · 冒險 ${S.temp}`;
+  }
+
+  function renderCats() {
+    const near = state.loading ? [] : state.scored.filter(x => x.t <= S.maxT);
+    const neutral = !Object.values(S.pref).some(Boolean);
+    $('#catGrid').innerHTML = CATS.map(c => {
+      const n = c.id === 'any' ? near.length : near.filter(x => x.s.cats.has(c.id)).length;
+      const badge = state.loading || !state.loc ? '' : `<span class="n">${n}</span>`;
+      if (c.id === 'any') {
+        return `<button type="button" class="cat" data-cat="any" aria-pressed="${neutral}">${badge}<span class="e">${c.emoji}</span>${c.label}</button>`;
+      }
+      const v = S.pref[c.id] || 0;
+      const mark = v === 1 ? '<span class="s">❤️</span>' : v === -1 ? '<span class="s">🚫</span>' : '';
+      const say = v === 1 ? '想吃' : v === -1 ? '不要' : '普通';
+      return `<button type="button" class="cat" data-cat="${c.id}" data-v="${v}" aria-pressed="${v === 1}" aria-label="${c.label}：${say}">${badge}${mark}<span class="e">${c.emoji}</span>${c.label}</button>`;
+    }).join('');
+  }
+
+  function hoursTag(x) {
+    const os = x.os, raw = x.s.hours;
+    if (os.open) {
+      const word = state.evalNow ? '營業中' : '那時有開';
+      return `<span class="tag hit">🕒 ${word}${os.closesIn === Infinity ? ' · 24 小時' : ` · ${fmtClock(os.closeAt)} 打烊`}</span>`;
+    }
+    return `<span class="tag">🕒 ${raw ? esc(raw) : '營業時間未知'}</span>`;
+  }
+
+  function renderResult() {
+    if (state.spinning) return;
+    const { dish, shop } = state;
+    const meal = MEALS.find(m => m.id === state.meal);
+    const pick = $('#pick'), main = $('#actMain'), sub = $('#actSub');
+    const nav = $('#navBtn'), g = $('#gBtn');
+
+    $('#slotKicker').textContent = dish ? `${meal.label}就吃這個` : shop ? (state.pickProb != null ? 'JEV 幫你挑了這家' : '你挑的這家') : `${meal.label}吃什麼？`;
+
+    if (!dish && !shop) {
+      setSlot('🍽️', '交給我決定');
+      pick.innerHTML = `<p class="pick-idle">選好「哪一餐、怎麼去、想吃的類型」<br>按下 <b>幫我決定</b>，剩下的交給 JEV 和命運 🎲</p>`;
+      main.hidden = true; sub.hidden = true;
+      return;
+    }
+
+    if (dish) setSlot(dish.emoji, dish.name); else setSlot(shopEmoji(shop), primaryLabel(shop));
+    main.hidden = false; sub.hidden = false;
+    $('#rerollShop').disabled = !state.pool.length;
+    $('#rerollDish').textContent = dish ? '🎲 換道菜' : '🎲 抽道菜';
+
+    if (shop) {
+      const x = state.byId.get(shop.id);
+      const hit = dish && kwHit(shop, dish);
+      const catTags = [...shop.cats].slice(0, 3).map(c => `<span class="tag">${CAT[c].emoji} ${CAT[c].label}</span>`).join('');
+      let jevHTML = '';
+      if (x) {
+        const best = x.out.length ? '' : [...x.parts].filter(p => p.val > 0).sort((a, b) => b.val - a.val).slice(0, 2).map(p => p.n).join('、');
+        jevHTML = `
+          <div class="stats">
+            <div class="stat"><b>${x.out.length ? '—' : Math.round(x.jev * 100)}</b><small>JEV 分數</small></div>
+            <div class="stat"><b>${state.pickProb != null ? pct(state.pickProb) : '手選'}</b><small>抽中機率</small></div>
+            <div class="stat"><b>${x.t} 分</b><small>${mode().emoji} ${mode().label}到店</small></div>
+          </div>
+          <div class="why-line">${best ? `強項：<b>${best}</b> · ` : ''}P = ${x.P.toFixed(2)}${x.pNotes.length ? `（${x.pNotes.join('、')}）` : '（去得成、也開著）'}</div>`;
+      }
+      pick.innerHTML = `
+        <div class="pick-name">${esc(shop.name)}${state.demo ? ' <span class="tag">示範</span>' : ''}</div>
+        <div class="pick-meta">${fmtDist(shop.dist)} · ${travelText(shop)}${shop.addr ? ' · ' + esc(shop.addr) : ''}</div>
+        ${jevHTML}
+        <div class="tags">
+          ${x && x.out.length ? `<span class="tag warn">⚠️ 目前條件下會被排除：${esc(x.out.join('、'))}</span>` : ''}
+          ${dish ? (hit ? `<span class="tag hit">🎯 店名就有「${esc(hit)}」</span>` : `<span class="tag">同類型餐廳，可能有賣</span>`) : ''}
+          ${x ? hoursTag(x) : ''}
+          <span class="tag">💰 約 $${shop.price}（依類型估）</span>
+          ${catTags}
+        </div>`;
+      if (state.demo) {
+        nav.hidden = true;
+        g.hidden = false; g.classList.add('wide');
+        g.textContent = `🔎 在 Google 地圖找附近「${searchTerm()}」`;
+        g.href = gSearch(searchTerm(), state.loc, zoomFor(reachM()));
+      } else {
+        nav.hidden = false; nav.href = gDir(shop);
+        g.hidden = false; g.classList.remove('wide');
+        g.textContent = '⭐ Google 看評價';
+        g.href = gPlace(shop);
+      }
+    } else {
+      pick.innerHTML = `
+        <div class="pick-name">${mode().label} ${S.maxT} 分鐘內沒找到「${esc(dish.name)}」</div>
+        <div class="pick-meta">可能被營業時間或飲食限制排除了，也可能是開放地圖資料不齊全，直接問 Google 地圖最準 👇</div>`;
+      nav.hidden = true;
+      g.hidden = false; g.classList.add('wide');
+      g.textContent = `🔎 在 Google 地圖找附近「${dish.name}」`;
+      g.href = gSearch(dish.name, state.loc, zoomFor(reachM()));
+    }
+  }
+
+  function renderMap() {
+    const iframe = $('#gmap'), empty = $('#mapEmpty'), radar = $('#radarWrap');
+    document.querySelectorAll('#mapTabs [data-view]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === S.view));
+    $('#mapLegend').hidden = S.view !== 'radar';
+    if (!state.loc) { iframe.hidden = true; radar.hidden = true; empty.hidden = false; return; }
+    empty.hidden = true;
+    const term = searchTerm(), z = zoomFor(Math.max(300, reachM()));
+    const showShop = state.shop && !state.demo;
+    $('#mapLink').href = showShop ? gPlace(state.shop) : gSearch(term, state.loc, z);
+    if (S.view === 'radar') {
+      iframe.hidden = true; radar.hidden = false;
+      $('#mapTitle').textContent = `📡 ${state.scored.filter(x => !x.out.length).length} 家可去`;
+      renderRadar();
+      return;
+    }
+    radar.hidden = true;
+    const src = showShop ? gEmbedPlace(state.shop) : gEmbedSearch(term, state.loc, z);
+    if (iframe.dataset.src !== src) { iframe.src = src; iframe.dataset.src = src; }
+    iframe.hidden = false;
+    $('#mapTitle').textContent = showShop ? `📍 ${state.shop.name}` : `🗺️ 附近的「${term}」`;
+  }
+
+  // 以你為中心，把附近的店依真實方位畫出來：顏色＝狀態，大小＝JEV
+  function renderRadar() {
+    const svg = $('#radar');
+    const w = svg.clientWidth || 400, h = svg.clientHeight || 280;
+    svg.setAttribute('viewBox', `${-w / 2} ${-h / 2} ${w} ${h}`);
+    const reach = reachM(), viewR = Math.max(200, reach * 1.12);
+    const k = (Math.min(w, h) / 2 - 14) / viewR; // 每公尺幾 px
+    const cos = Math.cos(state.loc.lat * Math.PI / 180);
+    const xy = s => [(s.lng - state.loc.lng) * 111320 * cos * k, -(s.lat - state.loc.lat) * 110574 * k];
+    const visible = ([x, y]) => Math.abs(x) < w / 2 + 10 && Math.abs(y) < h / 2 + 10;
+    const lbl = (x, y, text, size, weight) =>
+      `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size}" font-weight="${weight}" fill="var(--text)" stroke="var(--surface-2)" stroke-width="3" paint-order="stroke" pointer-events="none">${esc(text)}</text>`;
+
+    let g = '';
+    const step = [100, 200, 250, 500, 1000, 2000, 2500, 5000].find(s => viewR / s <= 3.2) || 5000;
+    const maxR = Math.hypot(w, h) / 2 / k;
+    for (let r = step; r <= maxR; r += step) {
+      const pr = r * k, d = pr * Math.SQRT1_2;
+      g += `<circle r="${pr.toFixed(1)}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+      if (d < w / 2 - 20 && d < h / 2 - 8) g += `<text x="${(d + 3).toFixed(1)}" y="${(-d - 3).toFixed(1)}" font-size="10" fill="var(--muted)">${fmtShort(r)}</text>`;
+    }
+    if (reach > 0) {
+      g += `<circle r="${(reach * k).toFixed(1)}" fill="var(--accent)" fill-opacity=".07" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+      g += `<text y="${(reach * k + 13).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--accent)">${mode().emoji} ${S.maxT} 分鐘可達</text>`;
+    }
+
+    const inPool = new Set(state.pool.map(x => x.s.id));
+    const sel = state.shop && state.shop.id;
+    const labelIds = new Set(state.pool.slice(0, 6).map(x => x.s.id));
+    let outL = '', otherL = '', poolL = '', selL = '', labels = '';
+    for (const x of state.scored) {
+      const p = xy(x.s);
+      if (!visible(p)) continue;
+      const [cx, cy] = p.map(v => v.toFixed(1));
+      const tip = `<title>${esc(x.s.name)}｜${x.t} 分｜${x.out.length ? esc(x.out.join('、')) : 'JEV ' + Math.round(x.jev * 100)}</title>`;
+      const id = esc(x.s.id);
+      let r;
+      if (x.s.id === sel) {
+        r = 9;
+        selL = `<circle data-id="${id}" cx="${cx}" cy="${cy}" r="${r}" fill="var(--ok)" stroke="var(--surface)" stroke-width="3">${tip}</circle>`;
+      } else if (x.out.length) {
+        r = 3;
+        outL += `<circle data-id="${id}" cx="${cx}" cy="${cy}" r="${r}" fill="var(--muted)" fill-opacity=".35">${tip}</circle>`;
+      } else if (inPool.has(x.s.id)) {
+        r = 3.5 + x.jev * 7;
+        poolL += `<circle data-id="${id}" cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="var(--accent)" fill-opacity=".85" stroke="transparent" stroke-width="6">${tip}</circle>`;
+      } else {
+        r = 3.5;
+        otherL += `<circle data-id="${id}" cx="${cx}" cy="${cy}" r="${r}" fill="var(--accent-2)" fill-opacity=".55" stroke="transparent" stroke-width="6">${tip}</circle>`;
+      }
+      if (x.s.id === sel || labelIds.has(x.s.id)) labels += lbl(cx, (p[1] - r - 5).toFixed(1), trunc(x.s.name, 10), 11.5, x.s.id === sel ? 900 : 700);
+    }
+    const you = `<circle r="6" fill="#3f8fbf" stroke="var(--surface)" stroke-width="3"/>` + lbl(0, 20, '你在這', 10.5, 500);
+    svg.innerHTML = g + outL + otherL + poolL + you + selL + labels;
+  }
+
+  const barHTML = x => `<div class="bar" title="P = ${x.P.toFixed(2)}">${x.parts.filter(p => p.val > 0).map(p =>
+    `<span style="width:${(p.val * 100).toFixed(1)}%;background:${p.col}" title="${p.n} ${Math.round(p.raw * 100)}"></span>`).join('')}</div>`;
+
+  function itemHTML(x, i) {
+    const s = x.s, active = state.shop && state.shop.id === s.id;
+    const score = x.out.length ? '<b>—</b>' : `<b>${Math.round(x.jev * 100)}</b><small>${x.prob != null ? pct(x.prob) : '—'}</small>`;
+    return `
+      <li class="item${active ? ' active' : ''}${x.out.length ? ' out' : ''}" data-id="${esc(s.id)}" tabindex="0" role="button">
+        <div class="item-emoji">${shopEmoji(s)}</div>
+        <div class="item-body">
+          <div class="item-name">${esc(s.name)}</div>
+          <div class="item-meta">${esc(shopCatText(s))} · ${x.t} 分 · ${fmtShort(s.dist)} · 約$${s.price}</div>
+          ${x.out.length ? `<div class="item-meta">⛔ ${esc(x.out.join('、'))}</div>` : barHTML(x)}
+        </div>
+        <div class="item-score${i === 0 ? ' top' : ''}">${score}</div>
+      </li>`;
+  }
+
+  function renderList() {
+    const list = $('#list'), count = $('#count'), ctx = $('#ctx'), legend = $('#barLegend'), exWrap = $('#exWrap');
+    if (!state.loc || state.loading) {
+      count.textContent = '搜尋中…';
+      ctx.hidden = true; legend.hidden = true; exWrap.hidden = true;
+      list.innerHTML = Array.from({ length: 5 }, () =>
+        `<li class="sk"><i style="width:42px;height:42px"></i><div style="flex:1"><i style="height:14px;width:60%"></i><i style="height:11px;width:40%;margin-top:6px"></i></div><i style="width:40px;height:14px"></i></li>`
+      ).join('');
+      return;
+    }
+    const cand = state.scored.filter(x => !x.out.length);
+    const out = state.scored.filter(x => x.out.length);
+    count.textContent = `${cand.length} 家可去${state.demo ? '（示範）' : ''}`;
+
+    ctx.hidden = false;
+    const capped = state.poolTotal > state.pool.length ? `，取 JEV 前 ${state.pool.length} 名` : '';
+    ctx.innerHTML = state.dish
+      ? `🎲 抽到「<b>${esc(state.dish.name)}</b>」：在 ${state.poolTotal} 家${state.poolKind === 'hit' ? '店名有這道菜' : '同類型'}的店裡${capped}依機率抽`
+      : `${mode().emoji} ${mode().label} ${S.maxT} 分鐘內可去 ${cand.length} 家${capped}依機率抽（冒險度 ${S.temp}，越高池子越大）`;
+    const W = effWeights();
+    legend.hidden = false;
+    legend.innerHTML = FACTORS.filter(f => W[f.k] > 0).map(f => `<span><i style="background:${f.col}"></i>${f.n}</span>`).join('') + '<span>（長條總長 = JEV）</span>';
+
+    if (!cand.length) {
+      const term = searchTerm();
+      list.innerHTML = `<li class="empty">這個條件下沒有可去的餐廳 😢<br>試試拉長時間、放寬飲食限制，或 <a href="${gSearch(term, state.loc, zoomFor(reachM()))}" target="_blank" rel="noopener">直接在 Google 地圖搜尋「${esc(term)}」</a></li>`;
+    } else {
+      const shown = cand.slice(0, state.listLimit);
+      list.innerHTML = shown.map(itemHTML).join('') +
+        (cand.length > shown.length ? `<li><button class="btn ghost more" id="moreBtn" type="button">再顯示 ${Math.min(20, cand.length - shown.length)} 家（還有 ${cand.length - shown.length} 家）</button></li>` : '');
+    }
+
+    exWrap.hidden = !out.length;
+    if (out.length) {
+      const group = r => r.startsWith('不吃') || r === '非素食' ? '飲食限制' : r.startsWith('不想吃') ? '不想吃' : r;
+      const cnt = {};
+      out.forEach(x => new Set(x.out.map(group)).forEach(k => { cnt[k] = (cnt[k] || 0) + 1; }));
+      $('#exSum').textContent = `被排除的 ${out.length} 家（${Object.entries(cnt).map(([k, n]) => `${k} ${n}`).join(' · ')}）`;
+      const near = [...out].sort((a, b) => a.s.dist - b.s.dist).slice(0, 40);
+      $('#exList').innerHTML = near.map(x => itemHTML(x)).join('') +
+        (out.length > near.length ? `<li class="empty">…還有 ${out.length - near.length} 家比較遠的</li>` : '');
+    }
+  }
+
+  function renderHistory() {
+    const h = store.get('history', []);
+    $('#clearHist').hidden = !h.length;
+    if (!h.length) {
+      $('#hist').innerHTML = `<li class="empty" style="display:block;padding:10px 0">還沒有紀錄。按「就吃這個」就會記下來，之後同一家、同類型的新鮮感分數會降低 👌</li>`;
+      return;
+    }
+    const day = ts => {
+      const d0 = new Date(); d0.setHours(0, 0, 0, 0);
+      const diff = Math.floor((d0 - new Date(ts).setHours(0, 0, 0, 0)) / 864e5);
+      return diff <= 0 ? '今天' : diff === 1 ? '昨天' : `${diff} 天前`;
+    };
+    $('#hist').innerHTML = h.slice(0, 6).map(x => `
+      <li><span class="h-e">${x.emoji}</span>
+        <div><b>${esc(x.dish)}</b>${x.shop ? ' · ' + esc(x.shop) : ''}
+        <small>${day(x.ts)} ${MEALS.find(m => m.id === x.meal)?.label || ''}</small></div></li>`).join('');
+  }
+
+  // 任何條件變了：重算 JEV，再重畫
+  function refresh() {
+    compute();
+    renderEval(); renderCats(); renderResult(); renderMap(); renderList();
+  }
+
+  /* ================= 事件 ================= */
+
+  $('#mealSeg').addEventListener('click', e => {
+    const b = e.target.closest('[data-meal]'); if (!b) return;
+    state.meal = b.dataset.meal;
+    renderMeals(); renderGreeting(); refresh();
+  });
+
+  $('#modeSeg').addEventListener('click', e => {
+    const b = e.target.closest('[data-mode]'); if (!b) return;
+    S.mode = b.dataset.mode; saveS();
+    renderModes(); refresh(); maybeFetch();
+  });
+
+  $('#maxT').addEventListener('input', e => {
+    S.maxT = Number(e.target.value); state.listLimit = 20; saveS();
+    renderModes(); refresh(); maybeFetch();
+  });
+
+  $('#catGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]'); if (!b) return;
+    const id = b.dataset.cat;
+    if (id === 'any') S.pref = {};
+    else {
+      const v = S.pref[id] || 0, nv = v === 0 ? 1 : v === 1 ? -1 : 0;
+      if (nv) S.pref[id] = nv; else delete S.pref[id];
+    }
+    state.listLimit = 20; saveS();
+    refresh();
+  });
+
+  $('#restrictChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-rs]'); if (!b) return;
+    const id = b.dataset.rs;
+    S.restrict = S.restrict.includes(id) ? S.restrict.filter(x => x !== id) : [...S.restrict, id];
+    saveS();
+    renderRestricts(); refresh();
+  });
+
+  $('#avoidRecent').checked = state.avoidRecent;
+  $('#avoidRecent').addEventListener('change', e => { state.avoidRecent = e.target.checked; store.set('avoidRecent', state.avoidRecent); });
+
+  $('#budget').addEventListener('input', e => {
+    S.budget = Number(e.target.value); saveS();
+    $('#bV').textContent = `NT$ ${S.budget}`; renderAdvSum(); refresh();
+  });
+  $('#weatherSeg').addEventListener('click', e => {
+    const b = e.target.closest('[data-w]'); if (!b) return;
+    S.weather = b.dataset.w; saveS();
+    renderAdvanced(); refresh();
+  });
+  $('#weights').addEventListener('input', e => {
+    const k = e.target.dataset.k; if (!k) return;
+    S.w[k] = Number(e.target.value); saveS();
+    e.target.nextElementSibling.textContent = S.w[k];
+    refresh();
+  });
+  $('#temp').addEventListener('input', e => {
+    S.temp = Number(e.target.value); saveS();
+    $('#tempV').textContent = S.temp; renderAdvSum(); refresh();
+  });
+
+  $('#spinBtn').addEventListener('click', () => spin());
+  $('#directBtn').addEventListener('click', pickDirect);
+  $('#rerollDish').addEventListener('click', () => spin(state.dish && state.dish.name));
+  $('#rerollShop').addEventListener('click', rerollShop);
+  $('#eatBtn').addEventListener('click', eat);
+  $('#retryBtn').addEventListener('click', () => {
+    state.fetchedRadius = 0; state.shop = null; state.dish = null;
+    loadShops();
+  });
+  $('#clearHist').addEventListener('click', () => { store.set('history', []); renderHistory(); refresh(); toast('紀錄已清除'); });
+
+  $('#mapTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-view]'); if (!b) return;
+    S.view = b.dataset.view; saveS();
+    renderMap();
+  });
+  $('#radar').addEventListener('click', e => {
+    const c = e.target.closest('[data-id]'); if (c) selectShop(c.getAttribute('data-id'));
+  });
+  let resizeFrame;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => { if (S.view === 'radar' && state.loc) renderRadar(); });
+  });
+
+  ['#list', '#exList'].forEach(sel => {
+    $(sel).addEventListener('click', e => {
+      if (e.target.closest('#moreBtn')) { state.listLimit += 20; renderList(); return; }
+      const li = e.target.closest('[data-id]'); if (li) selectShop(li.dataset.id);
+    });
+    $(sel).addEventListener('keydown', e => {
+      const li = e.target.closest('[data-id]');
+      if (li && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectShop(li.dataset.id); }
+    });
+  });
+
+  // 更換地點
+  const sheet = $('#sheet');
+  const openSheet = () => { sheet.hidden = false; $('#places').innerHTML = ''; setTimeout(() => $('#placeInput').focus(), 50); };
+  const closeSheet = () => { sheet.hidden = true; };
+  $('#locBtn').addEventListener('click', openSheet);
+  $('#closeSheet').addEventListener('click', closeSheet);
+  sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
+  $('#useGps').addEventListener('click', () => { closeSheet(); locate(); });
+
+  let placeResults = [];
+  $('#placeForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const q = $('#placeInput').value.trim(); if (!q) return;
+    const ul = $('#places');
+    ul.innerHTML = `<li class="empty">搜尋中…</li>`;
+    try {
+      placeResults = await searchPlace(q);
+      ul.innerHTML = placeResults.length
+        ? placeResults.map((p, i) => `<li><button type="button" data-i="${i}"><b>${esc(p.name || p.display_name.split(',')[0])}</b><small>${esc(p.display_name)}</small></button></li>`).join('')
+        : `<li class="empty">找不到這個地點，換個關鍵字試試</li>`;
+    } catch {
+      ul.innerHTML = `<li class="empty">搜尋失敗，請檢查網路後再試一次</li>`;
+    }
+  });
+  $('#places').addEventListener('click', e => {
+    const b = e.target.closest('[data-i]'); if (!b) return;
+    const p = placeResults[Number(b.dataset.i)];
+    closeSheet();
+    note('loc', null);
+    setLocation(Number(p.lat), Number(p.lon), p.name || p.display_name.split(',')[0]);
+  });
+
+  /* ================= 開始 ================= */
+
+  renderGreeting(); renderMeals(); renderModes(); renderRestricts(); renderAdvanced(); renderHistory();
+  refresh();
+  locate();
+})();
+</script>
+</body>
+</html>
