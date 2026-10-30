@@ -2,6 +2,10 @@
 
 「今天吃什麼」餐廳推薦網頁：從 OpenStreetMap（Overpass API）找出附近餐廳，依餐別、交通方式、類別與最近吃過的紀錄抽出一道菜和一家店；另有選用的「Jev」外掛，把一句話的需求交給外部 AI 選擇 API 挑店。
 
+**線上 Demo**：[主程式](https://mina201199.github.io/meal-buddy/)｜[JEV 公式版](https://mina201199.github.io/meal-buddy/index-jev.html)
+
+線上版是靜態網頁，沒有 `server.py`，所以 Jev AI 卡片只會顯示需要啟動本機伺服器的提示；要試 Jev 請依下方「如何執行」在本機啟動。
+
 ## 功能
 
 ### 主程式（`index.html`）
@@ -76,10 +80,11 @@ flowchart LR
 | `index.html` | 主程式（單檔 HTML／CSS／JS），最下面載入 `jev.js` |
 | `jev.js` | Jev 外掛，透過 `window.SanCan` 取得主程式的資料與函式 |
 | `index-jev.html` | JEV 公式計分的獨立版本 |
+| `core.js` | 兩個頁面共用的純函式（距離、營業時間解析、softmax 等），瀏覽器與 Node 測試共用 |
 | `server.py` | 本機靜態伺服器與 TypeSafe API 代轉 |
 | `start.bat` | Windows 雙擊啟動 `python server.py --open` |
 | `.env.example` | 金鑰設定範例 |
-| `index.備份-20261001.html` | 舊版 `index.html` 備份 |
+| `tests/` | `core.test.js`（Node）與 `test_server.py`（Python）自動化測試 |
 | `docs/superpowers/` | 「飯友配對」Demo 的設計規格與實作計畫（Demo 程式不在這個 repo） |
 
 ## 技術
@@ -115,7 +120,17 @@ flowchart LR
 
 ## 測試
 
-目前沒有自動化測試。
+不需要安裝任何套件，在 repo 根目錄執行：
+
+```bash
+node --test
+python -m unittest discover -s tests
+```
+
+- `tests/core.test.js`：營業時間解析（跨夜、跨週、看不懂的格式）、是否營業與打烊時間、距離、餐別判斷、加權抽籤與 softmax。需要 Node.js 20 以上。
+- `tests/test_server.py`：金鑰讀取順序、429／529 重試、不讓瀏覽器讀到 `.env`、拒絕其他網站與非 JSON 請求、請求大小限制、上游失敗回 502。
+
+畫面互動與 Jev 外掛目前沒有自動化測試。
 
 ## 限制與已知問題
 
@@ -126,4 +141,4 @@ flowchart LR
 - 使用 Jev 時，輸入的句子、餐別、時間、最近 5 筆吃過的紀錄與附近最多 80 家店的名稱和描述會經由 `server.py` 送到 TypeSafe AI；送出的資料不含座標。
 - Jev 的推薦品質取決於外部 API，本 repo 沒有對它的結果做過評估。
 - 使用者自己打的句子會原文送出；只有快速選項附有英文版本。
-- `index.html` 與 `index-jev.html` 有大量重複程式碼，修改時需要兩邊各自處理。
+- 共用的純函式已移到 `core.js`，但 `index.html` 與 `index-jev.html` 其餘部分仍有大量重複程式碼，修改時需要兩邊各自處理。
