@@ -70,8 +70,7 @@
   /* ---------- 樣式 ---------- */
 
   document.head.insertAdjacentHTML('beforeend', `<style id="jev-style">
-    #jevCard { order: 1; --jev: #6d5dfc; --jev-soft: #efedff; }
-    @media (prefers-color-scheme: dark) { #jevCard { --jev: #a99fff; --jev-soft: #2a2546; } }
+    #jevCard { order: 1; --jev: #346b48; --jev-soft: #eaf0df; }
     .jev-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .jev-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
     .jev-badge { font-size: 11px; font-weight: 700; color: var(--jev); background: var(--jev-soft); padding: 1px 8px; border-radius: 999px; }

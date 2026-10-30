@@ -4,47 +4,26 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>今天吃什麼｜JEV 整合版</title>
-<meta name="theme-color" content="#ff6433" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<meta name="theme-color" content="#faf7ef" />
+<link rel="icon" type="image/svg+xml" href="logo-a.svg" />
 <style>
   :root {
-    --bg: #fff7f1;
-    --surface: #ffffff;
-    --surface-2: #fff0e6;
-    --text: #2a1c15;
-    --muted: #8c776b;
-    --line: #f1e1d6;
-    --accent: #ff6433;
-    --accent-2: #ffa53d;
-    --accent-soft: #ffe8dd;
-    --ok: #1f9d6b;
+    --bg: #faf7ef;
+    --surface: #fffdf8;
+    --surface-2: #f4ede0;
+    --text: #302c24;
+    --muted: #776e60;
+    --line: #e9e2d6;
+    --accent: #bc481f;
+    --accent-2: #e96836;
+    --accent-soft: #fbe5d5;
+    --ok: #346b48;
     --warn-bg: #fff4d6;
     --warn-text: #7a5200;
     --warn-line: #f3dc9c;
-    --shadow: 0 8px 28px rgba(140, 70, 30, .10);
+    --shadow: 0 7px 24px rgba(75, 56, 32, .06);
     --radius: 20px;
     color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #16110e;
-      --surface: #211a16;
-      --surface-2: #2b221d;
-      --text: #f6ebe4;
-      --muted: #ad998d;
-      --line: #382d27;
-      --accent: #ff7447;
-      --accent-2: #ffb35c;
-      --accent-soft: #3d2519;
-      --ok: #37c28c;
-      --warn-bg: #3a2e12;
-      --warn-text: #f3d38a;
-      --warn-line: #5a4718;
-      --shadow: 0 8px 28px rgba(0, 0, 0, .4);
-      color-scheme: dark;
-    }
   }
 
   * { box-sizing: border-box; }
@@ -53,7 +32,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: "Noto Sans TC", system-ui, -apple-system, "Microsoft JhengHei", sans-serif;
+    font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
@@ -66,6 +45,8 @@
   /* ---------- Header ---------- */
   .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
   .greet { margin: 0; color: var(--muted); font-size: 14px; font-weight: 500; }
+  .brand { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; color: #4d2e20; font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+  .brand img { width: 36px; height: 36px; flex: none; }
   h1 { margin: 2px 0 0; font-size: 30px; font-weight: 900; letter-spacing: .5px; line-height: 1.2; }
   h1 span {
     background: linear-gradient(90deg, var(--accent), var(--accent-2));
@@ -168,11 +149,11 @@
     margin-top: 16px; width: 100%; border: 0; border-radius: 16px; padding: 16px;
     font-size: 19px; font-weight: 900; letter-spacing: 2px; color: #fff;
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    box-shadow: 0 10px 24px rgba(255, 100, 51, .35);
+    box-shadow: 0 10px 24px rgba(188, 72, 31, .35);
     transition: transform .1s, box-shadow .1s, opacity .2s;
   }
-  .cta:hover { box-shadow: 0 12px 28px rgba(255, 100, 51, .45); }
-  .cta:active { transform: translateY(2px) scale(.99); box-shadow: 0 5px 14px rgba(255, 100, 51, .3); }
+  .cta:hover { box-shadow: 0 12px 28px rgba(188, 72, 31, .45); }
+  .cta:active { transform: translateY(2px) scale(.99); box-shadow: 0 5px 14px rgba(188, 72, 31, .3); }
   .cta:disabled { opacity: .75; cursor: wait; }
   .cta .dice { display: inline-block; }
   .cta.rolling .dice { animation: roll .5s linear infinite; }
@@ -200,7 +181,7 @@
   .pick-meta { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
   .tags { margin-top: 4px; }
   .tag { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); margin: 6px 6px 0 0; }
-  .tag.hit { background: rgba(31, 157, 107, .13); color: var(--ok); font-weight: 700; }
+  .tag.hit { background: rgba(52, 107, 72, .13); color: var(--ok); font-weight: 700; }
   .tag.warn { background: var(--warn-bg); color: var(--warn-text); font-weight: 700; }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
   .stat { background: var(--surface-2); border-radius: 12px; padding: 8px 6px; text-align: center; }
@@ -353,6 +334,7 @@
 <div class="app">
   <header class="top">
     <div>
+      <p class="brand"><img src="logo-a.svg" alt="" width="36" height="36" /><span>飯友</span></p>
       <p class="greet" id="greet">你好！</p>
       <h1>今天<span>吃什麼</span>？</h1>
     </div>
